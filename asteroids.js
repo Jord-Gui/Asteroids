@@ -7,7 +7,8 @@ function asteroids() {
         .attr("rpm", 20)
         .attr("x", 300)
         .attr("y", 300)
-        .attr("z", 0);
+        .attr("z", 0)
+        .attr("hitbox", 20);
     let ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 15,20 0,-20")
         .attr("style", "fill:black;stroke:purple;stroke-width:5");
@@ -40,50 +41,53 @@ function asteroids() {
     keydown
         .filter(e => e.code === "Space")
         .flatMap(() => {
-        let laser = new Elem(svg, 'rect')
-            .attr("x", g.attr("x"))
-            .attr("y", g.attr("y"))
+        let laser = new Elem(svg, 'circle')
+            .attr("cx", g.attr("x"))
+            .attr("cy", g.attr("y"))
             .attr("z", g.attr("z"))
-            .attr("width", 2)
-            .attr("height", 4)
+            .attr("r", 2)
             .attr("style", "fill:blue;stroke:purple;stroke-width:1");
         return Observable.interval(1)
             .map(() => {
             return {
-                x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
-                y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                x: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                y: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
                 laser: laser
             };
         });
     })
         .subscribe(({ x, y, laser }) => {
-        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('x', x) && laser.attr('y', y);
+        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('cx', x) && laser.attr('cy', y);
     });
     const asteroidObservable = Observable.interval(1);
     asteroidObservable
         .takeUntil(asteroidObservable.filter(i => i === 5))
         .map(() => {
-        return new Elem(svg, 'rect')
-            .attr("width", 50)
-            .attr("height", 50)
-            .attr("x", Math.floor(Math.random() * svg.clientWidth))
-            .attr("y", Math.floor(Math.random() * svg.clientHeight))
+        return new Elem(svg, 'circle')
+            .attr("r", 25)
+            .attr("cx", Math.floor(Math.random() * svg.clientWidth))
+            .attr("cy", Math.floor(Math.random() * svg.clientHeight))
             .attr("z", Math.floor(Math.random() * 360))
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
     })
         .subscribe((asteroid) => {
         Observable.interval(10)
             .map(() => {
-            let x = Number(asteroid.attr("x"));
+            let x = Number(asteroid.attr("cx"));
             x = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Math.cos((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
-            let y = Number(asteroid.attr("y"));
+            let y = Number(asteroid.attr("cy"));
             y = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
-            return { x: x, y: y };
+            const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')));
+            return { x: x, y: y, collision: collisionDetected };
         })
-            .subscribe(({ x: x, y: y }) => {
-            asteroid.attr("x", x), asteroid.attr("y", y);
+            .subscribe(({ x, y, collision }) => {
+            collision ? ship.elem.remove() : asteroid.attr("cx", x), asteroid.attr("cy", y);
         });
     });
+    function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
+        const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
+        return distance < sum ? true : false;
+    }
 }
 if (typeof window != 'undefined')
     window.onload = () => {

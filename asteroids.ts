@@ -21,6 +21,7 @@ function asteroids() {
     .attr("x", 300) // x coordinate of translate
     .attr("y", 300) // y coordinate of translate
     .attr("z", 0) // rotation 
+    .attr("hitbox", 20) // hitbox is a circle of radius '_'
   
   // create a polygon shape for the ship as a child of the transform group
   let ship = new Elem(svg, 'polygon', g.elem) 
@@ -29,6 +30,7 @@ function asteroids() {
 
   // observable for when player hits a key down
   const keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'); // it is the actual 'document' that takes keyboard events, not just svg
+  
   // move the ship around by updating the translate and rotate coordinates 
   keydown
     .filter(e => e.code === "KeyA" || e.code === "KeyD" || e.code === "KeyW") // e.keyCode==96 is depracated
@@ -63,19 +65,18 @@ function asteroids() {
     .filter(e => e.code === "Space")
     .flatMap(() => {
       // create a new laser
-      let laser = new Elem(svg, 'rect')
-        .attr("x", g.attr("x"))
-        .attr("y", g.attr("y"))
+      let laser = new Elem(svg, 'circle')
+        .attr("cx", g.attr("x"))
+        .attr("cy", g.attr("y"))
         .attr("z", g.attr("z"))
-        .attr("width", 2)
-        .attr("height", 4)
+        .attr("r", 2)
         .attr("style", "fill:blue;stroke:purple;stroke-width:1")
       // shoot it out from the ship in the direction that the ship is facing
       return Observable.interval(1)
         .map(() => {
           return {
-            x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
-            y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            x: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            y: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
             laser: laser
           }
         })
@@ -85,7 +86,7 @@ function asteroids() {
       // let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
       // let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
       // laser disappears if it reaches the edge of the map
-      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
+      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
     });
   
   // Observable to create asteroids in set intervals and move them
@@ -94,11 +95,10 @@ function asteroids() {
     .takeUntil(asteroidObservable.filter(i => i === 5))
     .map(() => {
       // create new asteroid
-      return new Elem(svg, 'rect')
-        .attr("width", 50)
-        .attr("height", 50)
-        .attr("x", Math.floor(Math.random()*svg.clientWidth))
-        .attr("y", Math.floor(Math.random()*svg.clientHeight))
+      return new Elem(svg, 'circle')
+        .attr("r", 25)
+        .attr("cx", Math.floor(Math.random()*svg.clientWidth))
+        .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("z", Math.floor(Math.random()*360))
         .attr("style","fill:pink;stroke:purple;stroke-width:1") 
     })
@@ -107,17 +107,25 @@ function asteroids() {
       Observable.interval(10)
       .map(() => {
         // check if asteroid has reached edge of map, in which case wrap around
-        let x = Number(asteroid.attr("x"))
+        let x = Number(asteroid.attr("cx"))
         x = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        let y = Number(asteroid.attr("y"))
+        let y = Number(asteroid.attr("cy"))
         y = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        return {x: x, y: y}
+        // check if the asteroid hits the ship
+        const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
+        return {x: x, y: y, collision: collisionDetected}
       })
-      .subscribe(({x: x, y: y}) => {
-        // update asteroid position
-        asteroid.attr("x", x), asteroid.attr("y", y)
+      .subscribe(({x, y, collision}) => {
+        // update asteroid position and destroy ship if it hits asteroid
+        collision? ship.elem.remove(): asteroid.attr("cx", x), asteroid.attr("cy", y)
       })
     })
+
+    // a function that determines whether two circles have collided
+    function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
+      const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
+      return distance < sum? true: false;
+    }
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.
