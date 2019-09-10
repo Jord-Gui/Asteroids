@@ -13,6 +13,11 @@ function asteroids() {
         .attr("points", "-15,20 15,20 0,-20")
         .attr("style", "fill:black;stroke:purple;stroke-width:5");
     const keydown = Observable.fromEvent(document, 'keydown');
+    let asteroids = [];
+    function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
+        const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
+        return distance < sum ? true : false;
+    }
     keydown
         .filter(e => e.code === "KeyA" || e.code === "KeyD" || e.code === "KeyW")
         .scan({ x: 300, y: 300, z: 0 }, ({ x, y, z }, e) => {
@@ -49,10 +54,12 @@ function asteroids() {
             .attr("style", "fill:blue;stroke:purple;stroke-width:1");
         return Observable.interval(1)
             .map(() => {
+            let x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            let y = Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
             return {
-                x: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
-                y: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
-                laser: laser
+                x: x,
+                y: y,
+                laser: laser,
             };
         });
     })
@@ -70,6 +77,7 @@ function asteroids() {
             .attr("z", Math.floor(Math.random() * 360))
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
     })
+        .forEach((asteroid) => asteroids.push(asteroid))
         .subscribe((asteroid) => {
         Observable.interval(10)
             .map(() => {
@@ -84,10 +92,6 @@ function asteroids() {
             collision ? ship.elem.remove() : asteroid.attr("cx", x), asteroid.attr("cy", y);
         });
     });
-    function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
-        const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
-        return distance < sum ? true : false;
-    }
 }
 if (typeof window != 'undefined')
     window.onload = () => {
