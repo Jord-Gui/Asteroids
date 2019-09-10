@@ -63,28 +63,29 @@ function asteroids() {
     .filter(e => e.code === "Space")
     .flatMap(() => {
       // create a new laser
-      let laser = new Elem(svg, 'circle')
-        .attr("cx", g.attr("x"))
-        .attr("cy", g.attr("y"))
+      let laser = new Elem(svg, 'rect')
+        .attr("x", g.attr("x"))
+        .attr("y", g.attr("y"))
         .attr("z", g.attr("z"))
-        .attr("r", 2)
+        .attr("width", 2)
+        .attr("height", 4)
         .attr("style", "fill:blue;stroke:purple;stroke-width:1")
       // shoot it out from the ship in the direction that the ship is facing
       return Observable.interval(1)
         .map(() => {
           return {
-            cx: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
-            cy: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
             laser: laser
           }
         })
     })
-    .subscribe(({cx, cy, laser}) => {
+    .subscribe(({x, y, laser}) => {
       // move laser based on the direction when it was initially shot
       // let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
       // let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
       // laser disappears if it reaches the edge of the map
-      cx<0 || cy<0 || cx>svg.clientWidth || cy>svg.clientHeight? laser.elem.remove(): laser.attr('cx', cx) && laser.attr('cy', cy);
+      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
     });
   
   // Observable to create asteroids in set intervals and move them
@@ -93,10 +94,11 @@ function asteroids() {
     .takeUntil(asteroidObservable.filter(i => i === 5))
     .map(() => {
       // create new asteroid
-      return new Elem(svg, 'circle')
-        .attr("r", 25)
-        .attr("cx", Math.floor(Math.random()*svg.clientWidth))
-        .attr("cy", Math.floor(Math.random()*svg.clientHeight))
+      return new Elem(svg, 'rect')
+        .attr("width", 25)
+        .attr("height", 25)
+        .attr("x", Math.floor(Math.random()*svg.clientWidth))
+        .attr("y", Math.floor(Math.random()*svg.clientHeight))
         .attr("z", Math.floor(Math.random()*360))
         .attr("style","fill:pink;stroke:purple;stroke-width:1") 
     })
@@ -105,16 +107,15 @@ function asteroids() {
       Observable.interval(10)
       .map(() => {
         // check if asteroid has reached edge of map, in which case wrap around
-        let cx = Number(asteroid.attr("cx"))
-        cx = cx < 0? svg.clientWidth: cx > svg.clientWidth? 0: cx + Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        let cy = Number(asteroid.attr("cy"))
-        cy = cy < 0? svg.clientHeight: cy > svg.clientHeight? 0: cy + Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        return {cx: cx, cy: cy}
+        let x = Number(asteroid.attr("x"))
+        x = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
+        let y = Number(asteroid.attr("y"))
+        y = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
+        return {x: x, y: y}
       })
-      .subscribe(({cx, cy}) => {
+      .subscribe(({x: x, y: y}) => {
         // update asteroid position
-        asteroid.attr("cx", cx)
-        asteroid.attr("cy", cy)
+        asteroid.attr("x", x), asteroid.attr("y", y)
       })
     })
 }
