@@ -40,27 +40,27 @@ function asteroids() {
     keydown
         .filter(e => e.code === "Space")
         .flatMap(() => {
-        let laser = new Elem(svg, 'rect')
-            .attr("x", g.attr("x"))
-            .attr("y", g.attr("y"))
+        let laser = new Elem(svg, 'circle')
+            .attr("cx", g.attr("x"))
+            .attr("cy", g.attr("y"))
             .attr("z", g.attr("z"))
-            .attr("width", 2)
-            .attr("height", 4)
-            .attr("style", "fill:pink;stroke:purple;stroke-width:1");
+            .attr("r", 2)
+            .attr("style", "fill:blue;stroke:purple;stroke-width:1");
         return Observable.interval(1)
             .map(() => {
             return {
-                x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
-                y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                cx: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                cy: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
                 laser: laser
             };
         });
     })
-        .subscribe(({ x, y, laser }) => {
-        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('x', x) && laser.attr('y', y);
+        .subscribe(({ cx, cy, laser }) => {
+        cx < 0 || cy < 0 || cx > svg.clientWidth || cy > svg.clientHeight ? laser.elem.remove() : laser.attr('cx', cx) && laser.attr('cy', cy);
     });
-    Observable.interval(100)
-        .takeUntil(Observable.interval(500))
+    const asteroidObservable = Observable.interval(1);
+    asteroidObservable
+        .takeUntil(asteroidObservable.filter(i => i === 5))
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("r", 25)

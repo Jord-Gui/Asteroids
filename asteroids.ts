@@ -27,8 +27,8 @@ function asteroids() {
     .attr("points","-15,20 15,20 0,-20") // this just creates the points of the ship
     .attr("style","fill:black;stroke:purple;stroke-width:5") // this is just the colour
 
+  // observable for when player hits a key down
   const keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'); // it is the actual 'document' that takes keyboard events, not just svg
-  
   // move the ship around by updating the translate and rotate coordinates 
   keydown
     .filter(e => e.code === "KeyA" || e.code === "KeyD" || e.code === "KeyW") // e.keyCode==96 is depracated
@@ -63,36 +63,36 @@ function asteroids() {
     .filter(e => e.code === "Space")
     .flatMap(() => {
       // create a new laser
-      let laser = new Elem(svg, 'rect')
-        .attr("x", g.attr("x"))
-        .attr("y", g.attr("y"))
+      let laser = new Elem(svg, 'circle')
+        .attr("cx", g.attr("x"))
+        .attr("cy", g.attr("y"))
         .attr("z", g.attr("z"))
-        .attr("width", 2)
-        .attr("height", 4)
-        .attr("style", "fill:pink;stroke:purple;stroke-width:1")
+        .attr("r", 2)
+        .attr("style", "fill:blue;stroke:purple;stroke-width:1")
       // shoot it out from the ship in the direction that the ship is facing
       return Observable.interval(1)
         .map(() => {
           return {
-            x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
-            y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            cx: Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            cy: Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
             laser: laser
           }
         })
     })
-    .subscribe(({x, y, laser}) => {
+    .subscribe(({cx, cy, laser}) => {
       // move laser based on the direction when it was initially shot
       // let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
       // let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
       // laser disappears if it reaches the edge of the map
-      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
+      cx<0 || cy<0 || cx>svg.clientWidth || cy>svg.clientHeight? laser.elem.remove(): laser.attr('cx', cx) && laser.attr('cy', cy);
     });
   
-  // create asteroids in set intervals and moving them
-  Observable.interval(100)
-    .takeUntil(Observable.interval(500))
+  // Observable to create asteroids in set intervals and move them
+  const asteroidObservable = Observable.interval(1)
+  asteroidObservable
+    .takeUntil(asteroidObservable.filter(i => i === 5))
     .map(() => {
-      // creat new asteroid
+      // create new asteroid
       return new Elem(svg, 'circle')
         .attr("r", 25)
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
