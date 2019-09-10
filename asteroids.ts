@@ -99,10 +99,10 @@ function asteroids() {
       x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
     });
   
-  // Observable to create asteroids in set intervals and move them
+  // Observable to create asteroids in set intervals
   const asteroidObservable = Observable.interval(1)
   asteroidObservable
-    .takeUntil(asteroidObservable.filter(i => i === 5))
+    .takeUntil(asteroidObservable.filter(i => i === 4))
     .map(() => {
       // create new asteroid
       return new Elem(svg, 'circle')
@@ -112,11 +112,12 @@ function asteroids() {
         .attr("z", Math.floor(Math.random()*360))
         .attr("style","fill:pink;stroke:purple;stroke-width:1") 
     })
-    .forEach((asteroid) => asteroids.push(asteroid))
-    .subscribe((asteroid) => {
-      // move the asteroid
-      Observable.interval(10)
-      .map(() => {
+    .subscribe((asteroid) => asteroids.push(asteroid))
+  
+  // Observable to move the asteroid
+  Observable.interval(10)
+    .subscribe(() => {
+      asteroids.forEach((asteroid) => {
         // check if asteroid has reached edge of map, in which case wrap around
         let x = Number(asteroid.attr("cx"))
         x = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
@@ -124,11 +125,8 @@ function asteroids() {
         y = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
         // check if the asteroid hits the ship
         const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
-        return {x: x, y: y, collision: collisionDetected}
-      })
-      .subscribe(({x, y, collision}) => {
         // update asteroid position and destroy ship if it hits asteroid
-        collision? ship.elem.remove(): asteroid.attr("cx", x), asteroid.attr("cy", y)
+        collisionDetected? ship.elem.remove(): asteroid.attr("cx", x), asteroid.attr("cy", y)
       })
     })
 }
