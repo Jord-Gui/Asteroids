@@ -59,7 +59,7 @@ function asteroids() {
             return {
                 x: x,
                 y: y,
-                laser: laser,
+                laser: laser
             };
         });
     })
