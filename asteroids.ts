@@ -57,19 +57,20 @@ function asteroids() {
       }
     })
     .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
-  
-  // shoot laser beams from the ship whenever the space bar is hit
+
   keydown
     .filter(e => e.code === "Space")
-    .subscribe(() => {
+    .map(() => {
       // create a new laser
-      let laser = new Elem(svg, 'rect')
+      return new Elem(svg, 'rect')
         .attr("x", g.attr("x"))
         .attr("y", g.attr("y"))
         .attr("z", g.attr("z"))
         .attr("width", 2)
         .attr("height", 4)
         .attr("style", "fill:pink;stroke:purple;stroke-width:1")
+    })
+    .subscribe((laser) => {
       // shoot it out from the ship in the direction that the ship is facing
       Observable.interval(1)
       .subscribe(() => {
@@ -77,19 +78,21 @@ function asteroids() {
         laser.attr('x', Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)));
         laser.attr('y', Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)));
       });
-    });
+    })
   
   // create asteroids in set intervals 
   Observable.interval(100)
     .takeUntil(Observable.interval(500))
-    .subscribe(() => {
+    .map(() => {
       // create a new asteroid
-      let asteroid = new Elem(svg, 'circle')
-            .attr("r", 25)
-            .attr("cx", Math.floor(Math.random()*svg.clientWidth))
-            .attr("cy", Math.floor(Math.random()*svg.clientHeight))
-            .attr("z", Math.floor(Math.random()*360))
-            .attr("style","fill:pink;stroke:purple;stroke-width:1") 
+      return new Elem(svg, 'circle')
+        .attr("r", 25)
+        .attr("cx", Math.floor(Math.random()*svg.clientWidth))
+        .attr("cy", Math.floor(Math.random()*svg.clientHeight))
+        .attr("z", Math.floor(Math.random()*360))
+        .attr("style","fill:pink;stroke:purple;stroke-width:1") 
+    })
+    .subscribe((asteroid) => {
       // move the asteroid
       Observable.interval(10)
       .subscribe(() => {

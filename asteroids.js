@@ -39,14 +39,16 @@ function asteroids() {
         .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
     keydown
         .filter(e => e.code === "Space")
-        .subscribe(() => {
-        let laser = new Elem(svg, 'rect')
+        .map(() => {
+        return new Elem(svg, 'rect')
             .attr("x", g.attr("x"))
             .attr("y", g.attr("y"))
             .attr("z", g.attr("z"))
             .attr("width", 2)
             .attr("height", 4)
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
+    })
+        .subscribe((laser) => {
         Observable.interval(1)
             .subscribe(() => {
             laser.attr('x', Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)));
@@ -55,13 +57,15 @@ function asteroids() {
     });
     Observable.interval(100)
         .takeUntil(Observable.interval(500))
-        .subscribe(() => {
-        let asteroid = new Elem(svg, 'circle')
+        .map(() => {
+        return new Elem(svg, 'circle')
             .attr("r", 25)
             .attr("cx", Math.floor(Math.random() * svg.clientWidth))
             .attr("cy", Math.floor(Math.random() * svg.clientHeight))
             .attr("z", Math.floor(Math.random() * 360))
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
+    })
+        .subscribe((asteroid) => {
         Observable.interval(10)
             .subscribe(() => {
             let cx = Number(asteroid.attr("cx"));
