@@ -57,30 +57,36 @@ function asteroids() {
       }
     })
     .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
-
+  
+  // shoot laser from ship
   keydown
     .filter(e => e.code === "Space")
-    .map(() => {
+    .flatMap(() => {
       // create a new laser
-      return new Elem(svg, 'rect')
+      let laser = new Elem(svg, 'rect')
         .attr("x", g.attr("x"))
         .attr("y", g.attr("y"))
         .attr("z", g.attr("z"))
         .attr("width", 2)
         .attr("height", 4)
         .attr("style", "fill:pink;stroke:purple;stroke-width:1")
-    })
-    .subscribe((laser) => {
       // shoot it out from the ship in the direction that the ship is facing
-      Observable.interval(1)
-      .subscribe(() => {
-        // move laser based on the direction when it was initially shot
-        let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
-        let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
-        // lasesr disappears if it reaches the edge of the map
-        x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
-      });
+      return Observable.interval(1)
+        .map(() => {
+          return {
+            x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)),
+            laser: laser
+          }
+        })
     })
+    .subscribe(({x, y, laser}) => {
+      // move laser based on the direction when it was initially shot
+      // let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
+      // let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
+      // laser disappears if it reaches the edge of the map
+      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
+    });
   
   // create asteroids in set intervals 
   Observable.interval(100)

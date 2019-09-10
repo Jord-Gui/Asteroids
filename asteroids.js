@@ -39,22 +39,25 @@ function asteroids() {
         .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
     keydown
         .filter(e => e.code === "Space")
-        .map(() => {
-        return new Elem(svg, 'rect')
+        .flatMap(() => {
+        let laser = new Elem(svg, 'rect')
             .attr("x", g.attr("x"))
             .attr("y", g.attr("y"))
             .attr("z", g.attr("z"))
             .attr("width", 2)
             .attr("height", 4)
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
-    })
-        .subscribe((laser) => {
-        Observable.interval(1)
-            .subscribe(() => {
-            let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
-            let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
-            x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('x', x) && laser.attr('y', y);
+        return Observable.interval(1)
+            .map(() => {
+            return {
+                x: Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                y: Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)),
+                laser: laser
+            };
         });
+    })
+        .subscribe(({ x, y, laser }) => {
+        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('x', x) && laser.attr('y', y);
     });
     Observable.interval(100)
         .takeUntil(Observable.interval(500))
