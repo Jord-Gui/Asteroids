@@ -28,10 +28,16 @@ function asteroids() {
     .attr("points","-15,20 15,20 0,-20") // this just creates the points of the ship
     .attr("style","fill:black;stroke:purple;stroke-width:5") // this is just the colour
 
-  // observable for when player hits a key down
-  const keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'); // it is the actual 'document' that takes keyboard events, not just svg
-  // array to hold asteroids
-  let asteroids: Elem[] = [];
+  const
+    // observable for when player hits a key down 
+    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'), // it is the actual 'document' that takes keyboard events, not just svg
+    // create a time observable for movement
+    timeObservable = Observable.interval(10);
+  let 
+    // array to hold asteroids
+    asteroids: Elem[] = [],
+    // global variable to check when game is over
+    gameOver: boolean = false;
 
   // a function that determines whether two circles have collided
   function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
@@ -70,6 +76,7 @@ function asteroids() {
   
   // shoot laser from ship
   keydown
+    .takeUntil(timeObservable.filter(() => gameOver))
     .filter(e => e.code === "Space")
     .flatMap(() => {
       // create a new laser
@@ -79,7 +86,7 @@ function asteroids() {
         .attr("z", g.attr("z"))
         .attr("r", 2)
         .attr("style", "fill:blue;stroke:purple;stroke-width:1")
-      // shoot it out from the ship in the direction that the ship is facing
+      // move laser based on the direction of when it was initially shot
       return Observable.interval(1)
         .map(() => {
           let x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
@@ -92,17 +99,14 @@ function asteroids() {
         })
     })
     .subscribe(({x, y, laser}) => {
-      // move laser based on the direction when it was initially shot
-      // let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
-      // let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
-      // laser disappears if it reaches the edge of the map
+      // laser disappears if it reaches the edge of the map, otherwise, move it
       x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
     });
   
   // Observable to create asteroids in set intervals
   const asteroidObservable = Observable.interval(1)
   asteroidObservable
-    .takeUntil(asteroidObservable.filter(i => i === 4))
+    .takeUntil(asteroidObservable.filter(i => i === 5))
     .map(() => {
       // create new asteroid
       return new Elem(svg, 'circle')
@@ -114,8 +118,9 @@ function asteroids() {
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
   
-  // Observable to move the asteroid
-  Observable.interval(10)
+  // Give the asteroids movement
+  timeObservable
+    .takeUntil(timeObservable.filter(() => gameOver))
     .subscribe(() => {
       asteroids.forEach((asteroid) => {
         // check if asteroid has reached edge of map, in which case wrap around
@@ -126,7 +131,7 @@ function asteroids() {
         // check if the asteroid hits the ship
         const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
         // update asteroid position and destroy ship if it hits asteroid
-        collisionDetected? ship.elem.remove(): asteroid.attr("cx", x), asteroid.attr("cy", y)
+        collisionDetected? (ship.elem.remove(), gameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
       })
     })
 }

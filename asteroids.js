@@ -12,8 +12,8 @@ function asteroids() {
     let ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 15,20 0,-20")
         .attr("style", "fill:black;stroke:purple;stroke-width:5");
-    const keydown = Observable.fromEvent(document, 'keydown');
-    let asteroids = [];
+    const keydown = Observable.fromEvent(document, 'keydown'), timeObservable = Observable.interval(10);
+    let asteroids = [], gameOver = false;
     function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
         const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
         return distance < sum ? true : false;
@@ -44,6 +44,7 @@ function asteroids() {
     })
         .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
     keydown
+        .takeUntil(timeObservable.filter(() => gameOver))
         .filter(e => e.code === "Space")
         .flatMap(() => {
         let laser = new Elem(svg, 'circle')
@@ -68,7 +69,7 @@ function asteroids() {
     });
     const asteroidObservable = Observable.interval(1);
     asteroidObservable
-        .takeUntil(asteroidObservable.filter(i => i === 4))
+        .takeUntil(asteroidObservable.filter(i => i === 5))
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("r", 25)
@@ -78,7 +79,8 @@ function asteroids() {
             .attr("style", "fill:pink;stroke:purple;stroke-width:1");
     })
         .subscribe((asteroid) => asteroids.push(asteroid));
-    Observable.interval(10)
+    timeObservable
+        .takeUntil(timeObservable.filter(() => gameOver))
         .subscribe(() => {
         asteroids.forEach((asteroid) => {
             let x = Number(asteroid.attr("cx"));
@@ -86,7 +88,7 @@ function asteroids() {
             let y = Number(asteroid.attr("cy"));
             y = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
             const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')));
-            collisionDetected ? ship.elem.remove() : asteroid.attr("cx", x), asteroid.attr("cy", y);
+            collisionDetected ? (ship.elem.remove(), gameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
         });
     });
 }
