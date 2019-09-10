@@ -71,11 +71,14 @@ function asteroids() {
     })
         .subscribe((asteroid) => {
         Observable.interval(10)
-            .subscribe(() => {
+            .map(() => {
             let cx = Number(asteroid.attr("cx"));
             cx = cx < 0 ? svg.clientWidth : cx > svg.clientWidth ? 0 : cx + Math.cos((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
             let cy = Number(asteroid.attr("cy"));
             cy = cy < 0 ? svg.clientHeight : cy > svg.clientHeight ? 0 : cy + Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
+            return { cx: cx, cy: cy };
+        })
+            .subscribe(({ cx, cy }) => {
             asteroid.attr("cx", cx);
             asteroid.attr("cy", cy);
         });
