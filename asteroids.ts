@@ -32,7 +32,9 @@ function asteroids() {
     // observable for when player hits a key down 
     keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'), // it is the actual 'document' that takes keyboard events, not just svg
     // create a time observable for movement
-    timeObservable = Observable.interval(10);
+    timeObservable = Observable.interval(10),
+    // faster movement
+    timeFastObservable = Observable.interval(1);
   let 
     // array to hold asteroids
     asteroids: Elem[] = [],
@@ -87,7 +89,7 @@ function asteroids() {
         .attr("r", 2)
         .attr("style", "fill:blue;stroke:purple;stroke-width:1")
       // move laser based on the direction of when it was initially shot
-      return Observable.interval(1)
+      return timeFastObservable
         .map(() => {
           let x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
           let y = Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
@@ -104,9 +106,8 @@ function asteroids() {
     });
   
   // Observable to create asteroids in set intervals
-  const asteroidObservable = Observable.interval(1)
-  asteroidObservable
-    .takeUntil(asteroidObservable.filter(i => i === 5))
+  timeObservable
+    .takeUntil(timeObservable.filter(i => i === 50))
     .map(() => {
       // create new asteroid
       return new Elem(svg, 'circle')
