@@ -64,8 +64,8 @@ function asteroids() {
         .takeUntil(asteroidObservable.filter(i => i === 5))
         .map(() => {
         return new Elem(svg, 'rect')
-            .attr("width", 25)
-            .attr("height", 25)
+            .attr("width", 50)
+            .attr("height", 50)
             .attr("x", Math.floor(Math.random() * svg.clientWidth))
             .attr("y", Math.floor(Math.random() * svg.clientHeight))
             .attr("z", Math.floor(Math.random() * 360))

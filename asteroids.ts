@@ -22,7 +22,7 @@ function asteroids() {
     .attr("y", 300) // y coordinate of translate
     .attr("z", 0) // rotation 
   
-  // create a polygon shape for the space ship as a child of the transform group
+  // create a polygon shape for the ship as a child of the transform group
   let ship = new Elem(svg, 'polygon', g.elem) 
     .attr("points","-15,20 15,20 0,-20") // this just creates the points of the ship
     .attr("style","fill:black;stroke:purple;stroke-width:5") // this is just the colour
@@ -95,8 +95,8 @@ function asteroids() {
     .map(() => {
       // create new asteroid
       return new Elem(svg, 'rect')
-        .attr("width", 25)
-        .attr("height", 25)
+        .attr("width", 50)
+        .attr("height", 50)
         .attr("x", Math.floor(Math.random()*svg.clientWidth))
         .attr("y", Math.floor(Math.random()*svg.clientHeight))
         .attr("z", Math.floor(Math.random()*360))
