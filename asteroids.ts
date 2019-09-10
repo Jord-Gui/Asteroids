@@ -34,10 +34,12 @@ function asteroids() {
     // create a time observable for movement
     timeObservable = Observable.interval(10),
     // faster movement
-    timeFastObservable = Observable.interval(1);
-  let 
+    timeFastObservable = Observable.interval(1),
+    // array to hold lasers
+    lasers: Elem[] = [],
     // array to hold asteroids
-    asteroids: Elem[] = [],
+    asteroids: Elem[] = [];
+  let 
     // global variable to check when game is over
     gameOver: boolean = false;
 
@@ -76,34 +78,42 @@ function asteroids() {
     })
     .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
   
-  // shoot laser from ship
-  keydown
-    .takeUntil(timeObservable.filter(() => gameOver))
-    .filter(e => e.code === "Space")
-    .flatMap(() => {
+    // Observable to create a laser
+    keydown
+      .takeUntil(timeObservable.filter(() => gameOver))
+      .filter(e => e.code === "Space")
+      .map(() => {
       // create a new laser
-      let laser = new Elem(svg, 'circle')
+      return new Elem(svg, 'circle')
         .attr("cx", g.attr("x"))
         .attr("cy", g.attr("y"))
         .attr("z", g.attr("z"))
         .attr("r", 2)
-        .attr("style", "fill:blue;stroke:purple;stroke-width:1")
-      // move laser based on the direction of when it was initially shot
-      return timeFastObservable
-        .map(() => {
-          let x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
-          let y = Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
-          return {
-            x: x,
-            y: y,
-            laser: laser
-          }
+        .attr("style", "fill:white;stroke:purple;stroke-width:1")
+      })
+      .subscribe((laser) => lasers.push(laser))
+
+    // Give the laser movement
+    timeFastObservable
+      .takeUntil(timeObservable.filter(() => gameOver))
+      .subscribe(() => {
+        lasers.forEach((laser) => {
+          // move laser based on direction of when it was initially shot
+          const x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180));
+          const y = Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180));
+          // laser disappears if it reaches the edge of the map, otherwise, move it
+          x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
+          // get the asteroids that the laser has hit
+          const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
+          // destroy the asteroid that has been hit as well as the laser
+          collidedAsteroids.forEach((asteroid) => {
+            asteroid.elem.remove() // remove asteroid svg element from canvas
+            asteroids.splice(asteroids.indexOf(asteroid), 1) // remove asteroid object from array
+            laser.elem.remove() // remove laser svg element from canvas
+            lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
+          })
         })
-    })
-    .subscribe(({x, y, laser}) => {
-      // laser disappears if it reaches the edge of the map, otherwise, move it
-      x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
-    });
+      })
   
   // Observable to create asteroids in set intervals
   timeObservable
@@ -115,7 +125,7 @@ function asteroids() {
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("z", Math.floor(Math.random()*360))
-        .attr("style","fill:pink;stroke:purple;stroke-width:1") 
+        .attr("style","fill:purple;stroke:blue;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
   
