@@ -75,8 +75,10 @@ function asteroids() {
       Observable.interval(1)
       .subscribe(() => {
         // move laser based on the direction when it was initially shot
-        laser.attr('x', Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180)));
-        laser.attr('y', Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180)));
+        let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180))
+        let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180))
+        // lasesr disappears if it reaches the edge of the map
+        x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('x', x) && laser.attr('y', y);
       });
     })
   

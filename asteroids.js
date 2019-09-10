@@ -51,8 +51,9 @@ function asteroids() {
         .subscribe((laser) => {
         Observable.interval(1)
             .subscribe(() => {
-            laser.attr('x', Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180)));
-            laser.attr('y', Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180)));
+            let x = Number(laser.attr('x')) + Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            let y = Number(laser.attr('y')) + Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('x', x) && laser.attr('y', y);
         });
     });
     Observable.interval(100)
