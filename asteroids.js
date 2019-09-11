@@ -109,7 +109,12 @@ function asteroids() {
     });
     gameOver
         .subscribe(() => {
-        let endGame = new Elem(svg, 'text').attr('x', 300).attr('y', 300).attr('fill', 'white');
+        let endGame = new Elem(svg, 'text')
+            .attr('x', 65)
+            .attr('y', svg.clientHeight / 2)
+            .attr('fill', 'green')
+            .attr('font-family', 'liberation sans')
+            .attr('font-size', 80);
         endGame.elem.textContent = "GAME OVER";
     });
 }

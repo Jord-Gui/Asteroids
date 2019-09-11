@@ -173,10 +173,15 @@ function asteroids() {
       collision? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), isGameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
     })
 
-  // observable to check when it is game over and execute game over actions
+  // display game over text when the game is over
   gameOver
     .subscribe(() => {
-      let endGame = new Elem(svg, 'text').attr('x', 300).attr('y', 300).attr('fill', 'white')
+      let endGame = new Elem(svg, 'text')
+        .attr('x', 65)
+        .attr('y', svg.clientHeight/2)
+        .attr('fill', 'green')
+        .attr('font-family', 'liberation sans')
+        .attr('font-size', 80)
       endGame.elem.textContent = "GAME OVER"
     }) 
 }
