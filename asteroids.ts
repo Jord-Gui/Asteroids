@@ -1,16 +1,17 @@
-// FIT2102 2019 Assignment 1
+// FIT2102 2019 Assignment 1 - Jord Gui 29805457
 // https://docs.google.com/document/d/1Gr-M6LTU-tfm4yabqZWJYg-zTjEVqHKKTCvePGCYsUA/edit?usp=sharing
 
 function asteroids() {
-  // Inside this function you will use the classes and functions 
-  // defined in svgelement.ts and observable.ts
-  // to add visuals to the svg element in asteroids.html, animate them, and make them interactive.
-  // Study and complete the Observable tasks in the week 4 tutorial worksheet first to get ideas.
   // You will be marked on your functional programming style
   // as well as the functionality that you implement.
   // Document your code!  
   // Explain which ideas you have used ideas from the lectures to 
   // create reusable, generic functions.
+
+  // HTML file contains instructions on how to play the game. 
+  // Detail of design given below: 
+  // The...
+
   const svg = document.getElementById("canvas")!;
 
   let 
@@ -32,7 +33,7 @@ function asteroids() {
   const
     // create an interval of time that represents a time step in the game
     mainInterval = Observable.interval(10),
-    // observable for when the game is over
+    // observable for actions that require the game to be over
     gameOver = mainInterval.filter(_ => isGameOver === true),
     // observable for when player hits a key down
     keydown = Observable.fromEvent<KeyboardEvent>(document, "keydown").takeUntil(gameOver),
@@ -54,27 +55,6 @@ function asteroids() {
           time: time
         }
       })
-
-  // a function that determines whether two circles have collided 
-  //by determining whether the distance between the centre of the two circles is less than the sum of their radii
-  function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
-    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
-    return distance < sum? true: false;
-  }
-
-  // a function that determines the next position of an object based on its direction and velocity
-  function nextPosition(x: number, y: number, velocity: number, rotation: number, wrapping: boolean): {nextX: number, nextY: number} {
-    let nextX: number, nextY: number;
-    if (wrapping) {
-      nextX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+velocity*Math.cos((rotation-90)*(Math.PI/180))
-      nextY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+velocity*Math.sin((rotation-90)*(Math.PI/180))
-    }
-    else {
-      nextX = x + velocity*Math.cos((rotation-90)*(Math.PI/180));
-      nextY = y + velocity*Math.sin((rotation-90)*(Math.PI/180));
-    }
-    return {nextX: nextX, nextY: nextY}
-  }
 
   // function to move the ship depending on which key is pressed
   function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, rotation: Number}): void {
@@ -219,6 +199,27 @@ function asteroids() {
       // change colour of ship
       ship.attr("style", "fill:red;stroke:white;stroke-width:1")
     }) 
+
+  // a function that determines whether two circles have collided 
+  //by determining whether the distance between the centre of the two circles is less than the sum of their radii
+  function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
+    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
+    return distance < sum? true: false;
+  }
+
+  // a function that determines the next position of an object based on its direction and velocity
+  function nextPosition(x: number, y: number, velocity: number, rotation: number, wrapping: boolean): {nextX: number, nextY: number} {
+    let nextX: number, nextY: number;
+    if (wrapping) {
+      nextX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+velocity*Math.cos((rotation-90)*(Math.PI/180))
+      nextY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+velocity*Math.sin((rotation-90)*(Math.PI/180))
+    }
+    else {
+      nextX = x + velocity*Math.cos((rotation-90)*(Math.PI/180));
+      nextY = y + velocity*Math.sin((rotation-90)*(Math.PI/180));
+    }
+    return {nextX: nextX, nextY: nextY}
+  }
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.
