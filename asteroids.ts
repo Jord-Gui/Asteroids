@@ -135,13 +135,13 @@ function asteroids() {
         })
     })
 
-  // Observable to create a limited number of asteroids
+  // Observable to create a random number of asteroids
   mainInterval
     .takeUntil(mainInterval.filter(i => i === 50))
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
-        .attr("r", 25)
+        .attr("r", 30)
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("rotation", Math.floor(Math.random()*360))
@@ -178,7 +178,7 @@ function asteroids() {
 
   // display You Win message when all asteroids are destroyed
   mainObservable
-    .filter(({time}) => time>1000) // assume it doesn't take a second to complete the game and give time to create asteroids
+    .filter(({time}) => time > 1000) // assume it doesn't take a second to complete the game and give time to create asteroids
     .filter(() => asteroids.length === 0)
     .map(() => {
       // create the You Win message
