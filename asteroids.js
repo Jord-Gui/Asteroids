@@ -42,7 +42,7 @@ function asteroids() {
     moveShip("KeyA", moveShipACW);
     moveShip("KeyD", moveShipCW);
     keydown
-        .filter((e) => e.code === "Space" && g.attr("invincible") === "false")
+        .filter((e) => e.code === "Space" && !(e.repeat) && g.attr("invincible") === "false")
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("cx", currentShipPosition[1])

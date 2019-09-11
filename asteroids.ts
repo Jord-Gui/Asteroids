@@ -93,7 +93,7 @@ function asteroids() {
 
   // create lasers whenever the space bar is pressed down
   keydown
-    .filter((e) => e.code === "Space" && g.attr("invincible") === "false") // if ship is invincible, they can't shoot lasers
+    .filter((e) => e.code === "Space" && !(e.repeat) && g.attr("invincible") === "false") // if ship is invincible, they can't shoot lasers
     .map(() => {
       // create a new laser
       return new Elem(svg, 'circle')
