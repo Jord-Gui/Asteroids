@@ -158,7 +158,6 @@ function asteroids() {
         .attr("style","fill:black;stroke:white;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
-
   // give the asteroids movement at each time step
   tickTockObservable
     .flatMap(({asteroids}) => {
