@@ -8,14 +8,19 @@ function asteroids() {
         .attr("hitbox", 20)
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false;
+        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false, startTimer = new Elem(svg, 'text')
+        .attr('x', 50)
+        .attr('y', 100)
+        .attr('fill', 'white')
+        .attr('font-size', 100);
     const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
         .takeUntil(gameOver)
         .map((time) => {
         return {
-            lasers: lasers,
-            asteroids: asteroids,
-            time: time
+            laserArray: lasers,
+            asteroidArray: asteroids,
+            time: time,
+            startTime: startTimer
         };
     });
     function moveShip(Key, moveFunction) {
@@ -54,12 +59,12 @@ function asteroids() {
     })
         .subscribe((laser) => lasers.push(laser));
     mainObservable
-        .flatMap(({ lasers }) => {
+        .flatMap(({ laserArray, asteroidArray }) => {
         return Observable
-            .fromArray(lasers)
+            .fromArray(laserArray)
             .map((laser) => {
             const newPosition = nextPosition(svg, Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false);
-            const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
+            const collidedAsteroids = asteroidArray.filter((a) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
             return { x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids };
         });
     })
@@ -85,9 +90,9 @@ function asteroids() {
     })
         .subscribe((asteroid) => asteroids.push(asteroid));
     mainObservable
-        .flatMap(({ asteroids }) => {
+        .flatMap(({ asteroidArray }) => {
         return Observable
-            .fromArray(asteroids)
+            .fromArray(asteroidArray)
             .map((asteroid) => {
             const newPosition = nextPosition(svg, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true);
             const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
@@ -104,7 +109,7 @@ function asteroids() {
         ship.attr("style", "fill:black;stroke:white;stroke-width:1");
     });
     mainObservable
-        .filter(({ time }) => time > 1000 && asteroids.length === 0)
+        .filter(({ time, asteroidArray }) => time > 1000 && asteroidArray.length === 0)
         .subscribe((win) => {
         document.getElementById("lives").innerHTML = "YOU WIN 💚";
         document.getElementById("lives").style.color = "green";

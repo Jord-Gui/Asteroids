@@ -27,12 +27,18 @@ function asteroids() {
       .attr("rpm", 10)
       .attr("hitbox", 20)
       .attr("invincible", "true"),
-      // create a polygon shape for the ship as a child of the transform group
+    // create a polygon shape for the ship as a child of the transform group
     ship: Elem = new Elem(svg, 'polygon', g.elem)
       .attr("points","-15,20 0,10 15,20 0,-20")
       .attr("style","fill:yellow;stroke:white;stroke-width:1"),
-      // attribute to check whether the game is over
-    isGameOver: boolean = false;
+    // attribute to check whether the game is over
+    isGameOver: boolean = false,
+    // countdown to let players get ready to play at the start of the game
+    startTimer = new Elem(svg, 'text')
+      .attr('x', 50)
+      .attr('y', 100)
+      .attr('fill', 'white')
+      .attr('font-size', 100)
 
   const
     // create an interval of time that represents a time step in the game
@@ -54,9 +60,10 @@ function asteroids() {
       .takeUntil(gameOver)
       .map((time) => {
         return {
-          lasers: lasers,
-          asteroids: asteroids,
-          time: time
+          laserArray: lasers,
+          asteroidArray: asteroids,
+          time: time,
+          startTime: startTimer
         }
       })
 
@@ -112,14 +119,14 @@ function asteroids() {
   
    // make laser move at each time step
   mainObservable
-    .flatMap(({lasers}) => {
+    .flatMap(({laserArray, asteroidArray}) => {
       return Observable // turn the lasers array into an observable that can then be flatmapped
-        .fromArray(lasers)
+        .fromArray(laserArray)
         .map((laser) => {
           // move laser based on direction of when it was initially shot
           const newPosition = nextPosition(svg, Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false)
           // get the asteroids that the laser has hit
-          const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
+          const collidedAsteroids = asteroidArray.filter((a: Elem) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
           return {x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids}
         })
     })
@@ -152,9 +159,9 @@ function asteroids() {
   
     // give the asteroids movement at each time step
   mainObservable
-    .flatMap(({asteroids}) => {
+    .flatMap(({asteroidArray}) => {
       return Observable
-        .fromArray(asteroids) // turn the array of asteroids into an observable which can then be flatmapped 
+        .fromArray(asteroidArray) // turn the array of asteroids into an observable which can then be flatmapped 
         .map((asteroid) => {
           // update the position of the asteroid and check if asteroid has reached edge of map, in which case wrap around
           const newPosition = nextPosition(svg, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true)
@@ -179,7 +186,7 @@ function asteroids() {
   // display You Win message when all asteroids are destroyed
   mainObservable
     // assume it doesn't take a second to complete the game and give time to create asteroids
-    .filter(({time}) => time > 1000 && asteroids.length === 0)
+    .filter(({time, asteroidArray}) => time > 1000 && asteroidArray.length === 0)
     .subscribe((win) => {
       // display You Win message
       document.getElementById("lives")!.innerHTML = "YOU WIN 💚"
