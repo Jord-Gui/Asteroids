@@ -170,35 +170,39 @@ function asteroids() {
       ship.attr("style","fill:black;stroke:white;stroke-width:1")
     })
 
-  // display game win message when all asteroids are destroyed
+  // display You Win message when all asteroids are destroyed
   mainObservable
     .filter(({time}) => time>1000) // assume it doesn't take a second to complete the game and give time to create asteroids
     .filter(() => asteroids.length === 0)
-    .subscribe(() => {
-      // create the game win message
-      let win = new Elem(svg, "text")
-        .attr("x", 110)
-        .attr("y", svg.clientHeight/2)
-        .attr("fill", "green")
-        .attr("font-family", "liberation sans")
-        .attr("font-size", 80)
+    .map(() => {
+      // create the You Win message
+      return new Elem(svg, "text")
+      .attr("x", 110)
+      .attr("y", svg.clientHeight/2)
+      .attr("fill", "green")
+      .attr("font-family", "liberation sans")
+      .attr("font-size", 80)
+    })
+    .subscribe((win) => {
       win.elem.textContent = "YOU WIN"
       // change colour of ship
       ship.attr("style", "fill:green;stroke:white;stroke-width:1")
       isGameOver = true
     })
 
-  // display game over message if the player loses
+  // display Game Over message if the player loses
   gameOver
     .filter(() => asteroids.length > 0) // check that the player is the one that lost
-    .subscribe(() => {
-      // create the game over message
-      let endGame = new Elem(svg, "text")
-        .attr("x", 65)
-        .attr("y", svg.clientHeight/2)
-        .attr("fill", "red")
-        .attr("font-family", "liberation sans")
-        .attr("font-size", 80)
+    .map(() => {
+      // create the Game Over message
+      return new Elem(svg, "text")
+      .attr("x", 65)
+      .attr("y", svg.clientHeight/2)
+      .attr("fill", "red")
+      .attr("font-family", "liberation sans")
+      .attr("font-size", 80)
+    })
+    .subscribe((endGame) => {
       endGame.elem.textContent = "GAME OVER"
       // change colour of ship
       ship.attr("style", "fill:red;stroke:white;stroke-width:1")

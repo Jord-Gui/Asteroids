@@ -106,26 +106,30 @@ function asteroids() {
     mainObservable
         .filter(({ time }) => time > 1000)
         .filter(() => asteroids.length === 0)
-        .subscribe(() => {
-        let win = new Elem(svg, "text")
+        .map(() => {
+        return new Elem(svg, "text")
             .attr("x", 110)
             .attr("y", svg.clientHeight / 2)
             .attr("fill", "green")
             .attr("font-family", "liberation sans")
             .attr("font-size", 80);
+    })
+        .subscribe((win) => {
         win.elem.textContent = "YOU WIN";
         ship.attr("style", "fill:green;stroke:white;stroke-width:1");
         isGameOver = true;
     });
     gameOver
         .filter(() => asteroids.length > 0)
-        .subscribe(() => {
-        let endGame = new Elem(svg, "text")
+        .map(() => {
+        return new Elem(svg, "text")
             .attr("x", 65)
             .attr("y", svg.clientHeight / 2)
             .attr("fill", "red")
             .attr("font-family", "liberation sans")
             .attr("font-size", 80);
+    })
+        .subscribe((endGame) => {
         endGame.elem.textContent = "GAME OVER";
         ship.attr("style", "fill:red;stroke:white;stroke-width:1");
     });
