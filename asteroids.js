@@ -9,47 +9,33 @@ function asteroids() {
         .attr("points", "-15,20 15,20 0,-20")
         .attr("style", "fill:black;stroke:purple;stroke-width:5");
     const keydown = Observable.fromEvent(document, 'keydown'), keyup = Observable.fromEvent(document, 'keyup'), timeObservable = Observable.interval(20), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform'));
-    keydown
-        .filter((e) => e.code === "KeyW")
-        .flatMap(() => {
-        return timeObservable
-            .takeUntil(keyup)
-            .map(() => {
-            let x = Number(currentShipPosition[1]);
-            let y = Number(currentShipPosition[2]);
-            let z = Number(currentShipPosition[3]);
-            x = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(g.attr("velocity")) * Math.cos((z - 90) * (Math.PI / 180));
-            y = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((z - 90) * (Math.PI / 180));
-            return { x: String(x), y: String(y), z: String(z) };
+    function moveShip(Key, moveFunction) {
+        keydown
+            .filter((e) => e.code === Key && !e.repeat)
+            .flatMap(() => {
+            return timeObservable
+                .takeUntil(keyup)
+                .map(() => {
+                return { x: String(moveFunction().x), y: String(moveFunction().y), z: String(moveFunction().z) };
+            });
+        })
+            .subscribe(({ x, y, z }) => {
+            g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`);
         });
-    })
-        .subscribe(({ x, y, z }) => {
-        g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`);
-    });
-    keydown
-        .filter((e) => e.code === "KeyA")
-        .flatMap(() => {
-        return timeObservable
-            .takeUntil(keyup)
-            .map(() => {
-            return { x: currentShipPosition[1], y: currentShipPosition[2], z: Number(currentShipPosition[3]) - Number(g.attr("rpm")) };
-        });
-    })
-        .subscribe(({ x, y, z }) => {
-        g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = String(z)})`);
-    });
-    keydown
-        .filter((e) => e.code === "KeyD")
-        .flatMap(() => {
-        return timeObservable
-            .takeUntil(keyup)
-            .map(() => {
-            return { x: currentShipPosition[1], y: currentShipPosition[2], z: Number(currentShipPosition[3]) + Number(g.attr("rpm")) };
-        });
-    })
-        .subscribe(({ x, y, z }) => {
-        g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = String(z)})`);
-    });
+    }
+    const moveACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
+    const moveCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
+    const moveForward = () => {
+        const x = Number(currentShipPosition[1]);
+        const y = Number(currentShipPosition[2]);
+        const z = Number(currentShipPosition[3]);
+        const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(g.attr("velocity")) * Math.cos((z - 90) * (Math.PI / 180));
+        const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((z - 90) * (Math.PI / 180));
+        return { x: newX, y: newY, z: z };
+    };
+    moveShip("KeyW", moveForward);
+    moveShip("KeyA", moveACW);
+    moveShip("KeyD", moveCW);
 }
 if (typeof window != 'undefined')
     window.onload = () => {
