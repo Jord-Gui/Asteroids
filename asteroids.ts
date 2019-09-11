@@ -60,37 +60,51 @@ function asteroids() {
     return distance < sum? true: false;
   }
 
+  // a function that determines the next position of an object based on its direction and velocity
+  function nextPosition(x: number, y: number, velocity: number, rotation: number, wrapping: boolean): {nextX: number, nextY: number} {
+    let nextX: number, nextY: number;
+    if (wrapping) {
+      nextX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+velocity*Math.cos((rotation-90)*(Math.PI/180))
+      nextY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+velocity*Math.sin((rotation-90)*(Math.PI/180))
+    }
+    else {
+      nextX = x + velocity*Math.cos((rotation-90)*(Math.PI/180));
+      nextY = x + velocity*Math.sin((rotation-90)*(Math.PI/180));
+    }
+    return {nextX: nextX, nextY: nextY}
+  }
+
   // function to move the ship depending on which key is pressed
-  function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, z: Number}): void {
+  function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, rotation: Number}): void {
     keydown
     .filter((e) => e.code === Key && !e.repeat) // ensure that when key is held down e.repeat keys are filtered out
     .flatMap(() => {
       return tickTockInterval // while the key is being held down, update the position of the ship
         .takeUntil(keyup)
         .map(() => {
-          return {x: String(moveFunction().x), y: String(moveFunction().y), z: String(moveFunction().z)}
+          return {x: String(moveFunction().x), y: String(moveFunction().y), rotation: String(moveFunction().rotation)}
         })
     })
-    .subscribe(({x, y, z}) => {
+    .subscribe(({x, y, rotation}) => {
       // update the current position of the ship
-      g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`)
+      g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = rotation})`)
     })
   }
   // function to move the ship anti-clockwise by subtracting from the rotation of the g element
-  const moveShipACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
+  const moveShipACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
   // function to move the ship clockwise by adding to the rotation of the g element
-  const moveShipCW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm"))})
+  const moveShipCW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm"))})
   // function to move the ship forward in the direction of the front of the ship and wrapping the ship around if it gets to the edge of the canvas
   const moveShipForward = () => {
     // get the current position of the ship
     const x = Number(currentShipPosition[1])
     const y = Number(currentShipPosition[2])
-    const z = Number(currentShipPosition[3])
+    const rotation = Number(currentShipPosition[3])
     // check if ship has reached the edges of the canvas, and if it has, wrap it around
     // otherwise update its position
-    const newX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+Number(g.attr("velocity"))*Math.cos((z-90)*(Math.PI/180))
-    const newY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+Number(g.attr("velocity"))*Math.sin((z-90)*(Math.PI/180))
-    return {x: newX, y: newY, z: z}
+    const newX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+Number(g.attr("velocity"))*Math.cos((rotation-90)*(Math.PI/180))
+    const newY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+Number(g.attr("velocity"))*Math.sin((rotation-90)*(Math.PI/180))
+    return {x: newX, y: newY, rotation: rotation}
   }
   // call the function to move the ship
   moveShip("KeyW", moveShipForward);

@@ -20,6 +20,18 @@ function asteroids() {
         const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
         return distance < sum ? true : false;
     }
+    function nextPosition(x, y, velocity, rotation, wrapping) {
+        let nextX, nextY;
+        if (wrapping) {
+            nextX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + velocity * Math.cos((rotation - 90) * (Math.PI / 180));
+            nextY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
+        }
+        else {
+            nextX = x + velocity * Math.cos((rotation - 90) * (Math.PI / 180));
+            nextY = x + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
+        }
+        return { nextX: nextX, nextY: nextY };
+    }
     function moveShip(Key, moveFunction) {
         keydown
             .filter((e) => e.code === Key && !e.repeat)
@@ -27,22 +39,22 @@ function asteroids() {
             return tickTockInterval
                 .takeUntil(keyup)
                 .map(() => {
-                return { x: String(moveFunction().x), y: String(moveFunction().y), z: String(moveFunction().z) };
+                return { x: String(moveFunction().x), y: String(moveFunction().y), rotation: String(moveFunction().rotation) };
             });
         })
-            .subscribe(({ x, y, z }) => {
-            g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`);
+            .subscribe(({ x, y, rotation }) => {
+            g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = rotation})`);
         });
     }
-    const moveShipACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
-    const moveShipCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
+    const moveShipACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
+    const moveShipCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
     const moveShipForward = () => {
         const x = Number(currentShipPosition[1]);
         const y = Number(currentShipPosition[2]);
-        const z = Number(currentShipPosition[3]);
-        const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(g.attr("velocity")) * Math.cos((z - 90) * (Math.PI / 180));
-        const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((z - 90) * (Math.PI / 180));
-        return { x: newX, y: newY, z: z };
+        const rotation = Number(currentShipPosition[3]);
+        const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(g.attr("velocity")) * Math.cos((rotation - 90) * (Math.PI / 180));
+        const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((rotation - 90) * (Math.PI / 180));
+        return { x: newX, y: newY, rotation: rotation };
     };
     moveShip("KeyW", moveShipForward);
     moveShip("KeyA", moveShipACW);
