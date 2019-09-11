@@ -8,7 +8,7 @@ function asteroids() {
         .attr("hitbox", 20), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
         .attr("style", "fill:black;stroke:white;stroke-width:1"), isGameOver = false;
-    const tickTockInterval = Observable.interval(10), gameOver = tickTockInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, 'keydown').takeUntil(gameOver), keyup = Observable.fromEvent(document, 'keyup').takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
+    const tickTockInterval = Observable.interval(10), gameOver = tickTockInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
         .takeUntil(gameOver)
         .map(() => {
         return {
@@ -48,7 +48,7 @@ function asteroids() {
     moveShip("KeyA", moveACW);
     moveShip("KeyD", moveCW);
     keydown
-        .filter((e) => e.code === 'Space')
+        .filter((e) => e.code === "Space")
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("cx", currentShipPosition[1])
@@ -64,14 +64,14 @@ function asteroids() {
         return Observable
             .fromArray(lasers)
             .map((laser) => {
-            const x = Number(laser.attr('cx')) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
-            const y = Number(laser.attr('cy')) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            const x = Number(laser.attr("cx")) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr("z")) - 90) * (Math.PI / 180));
+            const y = Number(laser.attr("cy")) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr("z")) - 90) * (Math.PI / 180));
             const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
             return { x: x, y: y, laser: laser, collidedAsteroids: collidedAsteroids };
         });
     })
         .subscribe(({ x, y, laser, collidedAsteroids }) => {
-        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr('cx', x) && laser.attr('cy', y);
+        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr("cx", x) && laser.attr("cy", y);
         collidedAsteroids.forEach((asteroid) => {
             asteroid.elem.remove();
             asteroids.splice(asteroids.indexOf(asteroid), 1);
@@ -82,7 +82,7 @@ function asteroids() {
     tickTockInterval
         .takeUntil(tickTockInterval.filter(i => i === 50))
         .map(() => {
-        return new Elem(svg, 'circle')
+        return new Elem(svg, "circle")
             .attr("r", 25)
             .attr("cx", Math.floor(Math.random() * svg.clientWidth))
             .attr("cy", Math.floor(Math.random() * svg.clientHeight))
@@ -97,10 +97,10 @@ function asteroids() {
             .fromArray(asteroids)
             .map((asteroid) => {
             const x = Number(asteroid.attr("cx"));
-            const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(asteroid.attr("velocity")) * Math.cos((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
+            const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(asteroid.attr("velocity")) * Math.cos((Number(asteroid.attr("z")) - 90) * (Math.PI / 180));
             const y = Number(asteroid.attr("cy"));
-            const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(asteroid.attr("velocity")) * Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
-            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr('r')), Number(g.attr('hitbox')));
+            const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(asteroid.attr("velocity")) * Math.sin((Number(asteroid.attr("z")) - 90) * (Math.PI / 180));
+            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
             return { x: newX, y: newY, asteroid: asteroid, collision: collisionDetected };
         });
     })
@@ -112,12 +112,12 @@ function asteroids() {
         .filter(t => t > 1000)
         .filter(() => asteroids.length === 0)
         .subscribe(() => {
-        let win = new Elem(svg, 'text')
-            .attr('x', 110)
-            .attr('y', svg.clientHeight / 2)
-            .attr('fill', 'green')
-            .attr('font-family', 'liberation sans')
-            .attr('font-size', 80);
+        let win = new Elem(svg, "text")
+            .attr("x", 110)
+            .attr("y", svg.clientHeight / 2)
+            .attr("fill", "green")
+            .attr("font-family", "liberation sans")
+            .attr("font-size", 80);
         win.elem.textContent = "YOU WIN";
         ship.attr("style", "fill:green;stroke:white;stroke-width:1");
         isGameOver = true;
@@ -125,12 +125,12 @@ function asteroids() {
     gameOver
         .filter(() => asteroids.length > 0)
         .subscribe(() => {
-        let endGame = new Elem(svg, 'text')
-            .attr('x', 65)
-            .attr('y', svg.clientHeight / 2)
-            .attr('fill', 'red')
-            .attr('font-family', 'liberation sans')
-            .attr('font-size', 80);
+        let endGame = new Elem(svg, "text")
+            .attr("x", 65)
+            .attr("y", svg.clientHeight / 2)
+            .attr("fill", "red")
+            .attr("font-family", "liberation sans")
+            .attr("font-size", 80);
         endGame.elem.textContent = "GAME OVER";
         ship.attr("style", "fill:red;stroke:white;stroke-width:1");
     });
