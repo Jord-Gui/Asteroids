@@ -61,7 +61,7 @@ function asteroids() {
         return new Elem(svg, 'circle')
             .attr("cx", currentShipPosition[1])
             .attr("cy", currentShipPosition[2])
-            .attr("z", currentShipPosition[3])
+            .attr("rotation", currentShipPosition[3])
             .attr("r", 2)
             .attr("velocity", 10)
             .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1");
@@ -72,7 +72,7 @@ function asteroids() {
         return Observable
             .fromArray(lasers)
             .map((laser) => {
-            const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("z")), false);
+            const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false);
             const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
             return { x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids };
         });
@@ -93,7 +93,7 @@ function asteroids() {
             .attr("r", 25)
             .attr("cx", Math.floor(Math.random() * svg.clientWidth))
             .attr("cy", Math.floor(Math.random() * svg.clientHeight))
-            .attr("z", Math.floor(Math.random() * 360))
+            .attr("rotation", Math.floor(Math.random() * 360))
             .attr("velocity", 2)
             .attr("style", "fill:black;stroke:white;stroke-width:1");
     })
@@ -103,7 +103,7 @@ function asteroids() {
         return Observable
             .fromArray(asteroids)
             .map((asteroid) => {
-            const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("z")), true);
+            const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true);
             const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
             return { x: newPosition.nextX, y: newPosition.nextY, asteroid: asteroid, collision: collisionDetected };
         });

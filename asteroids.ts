@@ -113,7 +113,7 @@ function asteroids() {
       return new Elem(svg, 'circle')
         .attr("cx", currentShipPosition[1])
         .attr("cy", currentShipPosition[2])
-        .attr("z", currentShipPosition[3])
+        .attr("rotation", currentShipPosition[3])
         .attr("r", 2)
         .attr("velocity", 10)
         .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1")
@@ -126,7 +126,7 @@ function asteroids() {
         .fromArray(lasers)
         .map((laser) => {
           // move laser based on direction of when it was initially shot
-          const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("z")), false)
+          const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false)
           // get the asteroids that the laser has hit
           const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
           return {x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids}
@@ -153,7 +153,7 @@ function asteroids() {
         .attr("r", 25)
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
-        .attr("z", Math.floor(Math.random()*360))
+        .attr("rotation", Math.floor(Math.random()*360))
         .attr("velocity", 2)
         .attr("style","fill:black;stroke:white;stroke-width:1") 
     })
@@ -166,7 +166,7 @@ function asteroids() {
         .fromArray(asteroids) // turn the array of asteroids into an observable which can then be flatmapped 
         .map((asteroid) => {
           // update the position of the asteroid and check if asteroid has reached edge of map, in which case wrap around
-          const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("z")), true)
+          const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true)
           // check if the asteroid has collided with the ship
           const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")))
           return {x: newPosition.nextX, y: newPosition.nextY, asteroid: asteroid, collision: collisionDetected}
