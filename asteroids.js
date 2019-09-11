@@ -105,17 +105,34 @@ function asteroids() {
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
-        collision ? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), isGameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
+        collision ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
-    gameOver
+    tickTockInterval
+        .takeUntil(gameOver)
+        .filter(t => t > 1000)
+        .filter(() => asteroids.length === 0)
         .subscribe(() => {
-        let endGame = new Elem(svg, 'text')
-            .attr('x', 65)
+        let win = new Elem(svg, 'text')
+            .attr('x', 110)
             .attr('y', svg.clientHeight / 2)
             .attr('fill', 'green')
             .attr('font-family', 'liberation sans')
             .attr('font-size', 80);
+        win.elem.textContent = "YOU WIN";
+        ship.attr("style", "fill:green;stroke:white;stroke-width:1");
+        isGameOver = true;
+    });
+    gameOver
+        .filter(() => asteroids.length > 0)
+        .subscribe(() => {
+        let endGame = new Elem(svg, 'text')
+            .attr('x', 65)
+            .attr('y', svg.clientHeight / 2)
+            .attr('fill', 'red')
+            .attr('font-family', 'liberation sans')
+            .attr('font-size', 80);
         endGame.elem.textContent = "GAME OVER";
+        ship.attr("style", "fill:red;stroke:white;stroke-width:1");
     });
 }
 if (typeof window != 'undefined')
