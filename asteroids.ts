@@ -18,10 +18,6 @@ function asteroids() {
     .attr("transform","translate(300 300) rotate(0)")  
     .attr("velocity", 20)
     .attr("rpm", 20)
-    .attr("x", 300) // x coordinate of translate
-    .attr("y", 300) // y coordinate of translate
-    .attr("z", 0) // rotation 
-    .attr("hitbox", 20) // hitbox is a circle of radius '_'
   
   // create a polygon shape for the ship as a child of the transform group
   let ship = new Elem(svg, 'polygon', g.elem) 
@@ -30,122 +26,58 @@ function asteroids() {
 
   const
     // observable for when player hits a key down 
-    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'), // it is the actual 'document' that takes keyboard events, not just svg
+    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'),
+    // observable for key up
+    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup'),
     // create a time observable for movement
-    timeObservable = Observable.interval(10),
-    // faster movement
-    timeFastObservable = Observable.interval(1),
-    // array to hold lasers
-    lasers: Elem[] = [],
-    // array to hold asteroids
-    asteroids: Elem[] = [];
-  let 
-    // global variable to check when game is over
-    gameOver: boolean = false;
+    timeObservable = Observable.interval(20),
+    // current position of the ship
+    currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray;
 
-  // a function that determines whether two circles have collided
-  function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
-    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
-    return distance < sum? true: false;
-  }
-
-  // observable to move the ship around by updating the translate and rotate coordinates 
   keydown
-    .filter(e => e.code === "KeyA" || e.code === "KeyD" || e.code === "KeyW") // e.keyCode==96 is depracated
-    .scan({x: 300, y: 300, z: 0}, ({x, y, z}, e) => {
-      if (e.code === "KeyW") {
-        // if the x coordinate has reached the edges of svg, wrap it around
-        x = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+Number(g.attr("velocity"))*Math.cos((z-90)*(Math.PI/180)) // get front of ship in relation to the rotation
-        // if the y coordinate has reached the edges svg, wrap it around
-        y = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+Number(g.attr("velocity"))*Math.sin((z-90)*(Math.PI/180)) // this ensures the ship moves in the direction it is facing
-        g.attr("x", x) // set x coordinate of translate to be used for shooting
-        g.attr("y", y) // set y coordinate of translate to be used for shooting
-        return {x: x, y: y, z: z}
-      }
-      else if (e.code === "KeyA") {
-        z = z-Number(g.attr("rpm")) // set z coordinate of translate to be used for shooting
-        g.attr("z", z)
-        return {x: x, y: y, z: z} // rotate anti-clockwise
-      }
-      else if (e.code === "KeyD") {
-        z = z+Number(g.attr("rpm")) // set z coordinate of translate to be used for shooting
-        g.attr("z", z)
-        return {x: x, y: y, z: z} // rotate clockwise
-      }
-      else {
-        return {x: x, y: y, z: z}
-      }
-    })
-    .subscribe(value => g.attr("transform", `translate(${value.x} ${value.y}) rotate(${value.z})`));
-  
-    // Observable to create a laser
-    keydown
-      .takeUntil(timeObservable.filter(() => gameOver))
-      .filter(e => e.code === "Space")
-      .map(() => {
-      // create a new laser
-      return new Elem(svg, 'circle')
-        .attr("cx", g.attr("x"))
-        .attr("cy", g.attr("y"))
-        .attr("z", g.attr("z"))
-        .attr("r", 2)
-        .attr("style", "fill:white;stroke:purple;stroke-width:1")
-      })
-      .subscribe((laser) => lasers.push(laser))
-
-    // Give the laser movement
-    timeFastObservable
-      .takeUntil(timeObservable.filter(() => gameOver))
-      .subscribe(() => {
-        lasers.forEach((laser) => {
-          // move laser based on direction of when it was initially shot
-          const x = Number(laser.attr('cx')) + Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180));
-          const y = Number(laser.attr('cy')) + Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180));
-          // laser disappears if it reaches the edge of the map, otherwise, move it
-          x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
-          // get the asteroids that the laser has hit
-          const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
-          // destroy the asteroid that has been hit as well as the laser
-          collidedAsteroids.forEach((asteroid) => {
-            asteroid.elem.remove() // remove asteroid svg element from canvas
-            asteroids.splice(asteroids.indexOf(asteroid), 1) // remove asteroid object from array
-            laser.elem.remove() // remove laser svg element from canvas
-            lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
-          })
+    .filter((e) => e.code === "KeyW")
+    .flatMap(() => {
+      return timeObservable
+        .takeUntil(keyup)
+        .map(() => {
+          let x = Number(currentShipPosition[1])
+          let y = Number(currentShipPosition[2])
+          let z = Number(currentShipPosition[3])
+          x = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+Number(g.attr("velocity"))*Math.cos((z-90)*(Math.PI/180))
+          y = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+Number(g.attr("velocity"))*Math.sin((z-90)*(Math.PI/180))
+          return {x: String(x), y: String(y), z: String(z)}
         })
-      })
-  
-  // Observable to create asteroids in set intervals
-  timeObservable
-    .takeUntil(timeObservable.filter(i => i === 50))
-    .map(() => {
-      // create new asteroid
-      return new Elem(svg, 'circle')
-        .attr("r", 25)
-        .attr("cx", Math.floor(Math.random()*svg.clientWidth))
-        .attr("cy", Math.floor(Math.random()*svg.clientHeight))
-        .attr("z", Math.floor(Math.random()*360))
-        .attr("style","fill:purple;stroke:blue;stroke-width:1") 
     })
-    .subscribe((asteroid) => asteroids.push(asteroid))
-  
-  // Give the asteroids movement
-  timeObservable
-    .takeUntil(timeObservable.filter(() => gameOver))
-    .subscribe(() => {
-      asteroids.forEach((asteroid) => {
-        // check if asteroid has reached edge of map, in which case wrap around
-        let x = Number(asteroid.attr("cx"))
-        x = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        let y = Number(asteroid.attr("cy"))
-        y = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-        // check if the asteroid hits the ship
-        const collisionDetected = collisionDetectedCircles(x, y, Number(g.attr('x')), Number(g.attr('y')), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
-        // update asteroid position and destroy ship if it hits asteroid
-        collisionDetected? (ship.elem.remove(), gameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
-      })
+    .subscribe(({x, y, z}) => {
+      g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`)
     })
-}
+
+  keydown
+    .filter((e) => e.code === "KeyA")
+    .flatMap(() => {
+      return timeObservable
+        .takeUntil(keyup)
+        .map(() => {
+          return {x: currentShipPosition[1], y: currentShipPosition[2], z: Number(currentShipPosition[3]) - Number(g.attr("rpm"))}
+        })
+    })
+    .subscribe(({x, y, z}) => {
+      g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = String(z)})`)
+    })
+
+    keydown
+    .filter((e) => e.code === "KeyD")
+    .flatMap(() => {
+      return timeObservable
+        .takeUntil(keyup)
+        .map(() => {
+          return {x: currentShipPosition[1], y: currentShipPosition[2], z: Number(currentShipPosition[3]) + Number(g.attr("rpm"))}
+        })
+    })
+    .subscribe(({x, y, z}) => {
+      g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = String(z)})`)
+    })
+  }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.
 if (typeof window != 'undefined')
