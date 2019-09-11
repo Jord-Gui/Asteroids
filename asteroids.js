@@ -56,7 +56,7 @@ function asteroids() {
             .attr("z", currentShipPosition[3])
             .attr("r", 2)
             .attr("velocity", 10)
-            .attr("style", "fill:black;stroke:red;stroke-width:1");
+            .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1");
     })
         .subscribe((laser) => lasers.push(laser));
     tickTockObservable
@@ -105,7 +105,7 @@ function asteroids() {
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
-        collision ? (ship.elem.remove(), gameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
+        collision ? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), gameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
 }
 if (typeof window != 'undefined')
