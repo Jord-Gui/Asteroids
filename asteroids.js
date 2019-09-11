@@ -8,8 +8,8 @@ function asteroids() {
         .attr("hitbox", 20), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
         .attr("style", "fill:black;stroke:white;stroke-width:1"), gameOver = false;
-    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameOver === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameOver === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], mainGame = timeObservable
-        .takeUntil(timeObservable.filter(_ => gameOver === true))
+    const tickTockInterval = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(tickTockInterval.filter(_ => gameOver === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(tickTockInterval.filter(_ => gameOver === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
+        .takeUntil(tickTockInterval.filter(_ => gameOver === true))
         .map(() => {
         return {
             lasers: lasers,
@@ -24,7 +24,7 @@ function asteroids() {
         keydown
             .filter((e) => e.code === Key && !e.repeat)
             .flatMap(() => {
-            return timeObservable
+            return tickTockInterval
                 .takeUntil(keyup)
                 .map(() => {
                 return { x: String(moveFunction().x), y: String(moveFunction().y), z: String(moveFunction().z) };
@@ -59,7 +59,7 @@ function asteroids() {
             .attr("style", "fill:black;stroke:red;stroke-width:1");
     })
         .subscribe((laser) => lasers.push(laser));
-    mainGame
+    tickTockObservable
         .flatMap(({ lasers }) => {
         return Observable
             .fromArray(lasers)
@@ -79,8 +79,8 @@ function asteroids() {
             lasers.splice(lasers.indexOf(laser), 1);
         });
     });
-    timeObservable
-        .takeUntil(timeObservable.filter(i => i === 50))
+    tickTockInterval
+        .takeUntil(tickTockInterval.filter(i => i === 50))
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("r", 25)
@@ -91,7 +91,7 @@ function asteroids() {
             .attr("style", "fill:black;stroke:white;stroke-width:1");
     })
         .subscribe((asteroid) => asteroids.push(asteroid));
-    mainGame
+    tickTockObservable
         .flatMap(({ asteroids }) => {
         return Observable
             .fromArray(asteroids)
