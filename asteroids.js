@@ -5,9 +5,10 @@ function asteroids() {
         .attr("transform", "translate(300 300) rotate(0)")
         .attr("velocity", 10)
         .attr("rpm", 10)
-        .attr("hitbox", 20), ship = new Elem(svg, 'polygon', g.elem)
+        .attr("hitbox", 20)
+        .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:black;stroke:white;stroke-width:1"), isGameOver = false;
+        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false;
     const tickTockInterval = Observable.interval(10), gameOver = tickTockInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
         .takeUntil(gameOver)
         .map(() => {
@@ -56,7 +57,7 @@ function asteroids() {
     moveShip("KeyA", moveShipACW);
     moveShip("KeyD", moveShipCW);
     keydown
-        .filter((e) => e.code === "Space")
+        .filter((e) => e.code === "Space" && g.attr("invincible") === "false")
         .map(() => {
         return new Elem(svg, 'circle')
             .attr("cx", currentShipPosition[1])
@@ -109,7 +110,14 @@ function asteroids() {
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
-        collision ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
+        collision && (g.attr("invincible") === "false") ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
+    });
+    tickTockInterval
+        .takeUntil(gameOver)
+        .filter(t => t > 5000)
+        .subscribe(() => {
+        g.attr("invincible", "false");
+        ship.attr("style", "fill:black;stroke:white;stroke-width:1");
     });
     tickTockInterval
         .takeUntil(gameOver)

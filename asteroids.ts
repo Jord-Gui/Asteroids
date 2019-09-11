@@ -20,11 +20,12 @@ function asteroids() {
       .attr("transform","translate(300 300) rotate(0)")  
       .attr("velocity", 10)
       .attr("rpm", 10)
-      .attr("hitbox", 20),
+      .attr("hitbox", 20)
+      .attr("invincible", "true"),
       // create a polygon shape for the ship as a child of the transform group
       ship = new Elem(svg, 'polygon', g.elem)
       .attr("points","-15,20 0,10 15,20 0,-20")
-      .attr("style","fill:black;stroke:white;stroke-width:1"),
+      .attr("style","fill:yellow;stroke:white;stroke-width:1"),
       // attribute to check whether the game is over
       isGameOver = false;
 
@@ -43,7 +44,7 @@ function asteroids() {
     lasers: Elem[] = [],
     // array to store asteroids after they are created
     asteroids: Elem[] = [],
-    // main observable that represents the passage of time in the game
+    // main observable that represents the passage of time in the game for free moving objects
     tickTockObservable = tickTockInterval
       .takeUntil(gameOver)
       .map(() => {
@@ -107,7 +108,7 @@ function asteroids() {
 
   // create lasers whenever the space bar is pressed down
   keydown
-    .filter((e) => e.code === "Space")
+    .filter((e) => e.code === "Space" && g.attr("invincible") === "false") // if ship is invincible, they can't shoot lasers
     .map(() => {
       // create a new laser
       return new Elem(svg, 'circle')
@@ -173,7 +174,16 @@ function asteroids() {
     })
     .subscribe(({x, y, asteroid, collision}) => {
       // update the position of the asteroid but if the ship collides with an asteroid it is game over
-      collision? isGameOver=true: asteroid.attr("cx", x), asteroid.attr("cy", y)
+      collision && (g.attr("invincible") === "false")? isGameOver=true: asteroid.attr("cx", x), asteroid.attr("cy", y)
+    })
+
+  // make ship invincible for first 5 seconds so asteroids that spawn on it don't make game over immediately 
+  tickTockInterval
+    .takeUntil(gameOver)
+    .filter(t => t > 5000)
+    .subscribe(() => {
+      g.attr("invincible", "false")
+      ship.attr("style","fill:black;stroke:white;stroke-width:1")
     })
 
   // display game win message when all asteroids are destroyed
