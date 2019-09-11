@@ -18,11 +18,13 @@ function asteroids() {
     g = new Elem(svg,'g')
       .attr("transform","translate(300 300) rotate(0)")  
       .attr("velocity", 10)
-      .attr("rpm", 20),
-    ship = new Elem(svg, 'polygon', g.elem) // create a polygon shape for the ship as a child of the transform group
+      .attr("rpm", 10),
+
+      ship = new Elem(svg, 'polygon', g.elem) // create a polygon shape for the ship as a child of the transform group
       .attr("points","-15,20 15,20 0,-20")
       .attr("style","fill:black;stroke:purple;stroke-width:5"),
-    gameover = false;
+    
+      gameover = false;
 
   const
     // create a time observable for movement
@@ -93,17 +95,19 @@ function asteroids() {
     .subscribe((laser) => lasers.push(laser))
   // make laser move
   mainGame
-    .map(({lasers}) => {
-      lasers.forEach((laser) => {
+    .flatMap(({lasers}) => {
+      return Observable
+        .fromArray(lasers)
+        .map((laser) => {
           // move laser based on direction of when it was initially shot
           const x = Number(laser.attr('cx')) + Number(laser.attr("velocity"))*Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180));
           const y = Number(laser.attr('cy')) + Number(laser.attr("velocity"))*Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180));
-          // laser disappears if it reaches the edge of the map, otherwise move it
-          x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
-      })
+          return {x: x, y: y, laser: laser}
+        })
     })
-    .subscribe(() => {
-
+    .subscribe(({x, y, laser}) => {
+        // laser disappears if it reaches the edge of the map, otherwise move it
+        x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)): laser.attr('cx', x) && laser.attr('cy', y);
     })
 }
 

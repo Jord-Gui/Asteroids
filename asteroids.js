@@ -4,7 +4,7 @@ function asteroids() {
     let g = new Elem(svg, 'g')
         .attr("transform", "translate(300 300) rotate(0)")
         .attr("velocity", 10)
-        .attr("rpm", 20), ship = new Elem(svg, 'polygon', g.elem)
+        .attr("rpm", 10), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 15,20 0,-20")
         .attr("style", "fill:black;stroke:purple;stroke-width:5"), gameover = false;
     const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], mainGame = timeObservable
@@ -54,14 +54,17 @@ function asteroids() {
     })
         .subscribe((laser) => lasers.push(laser));
     mainGame
-        .map(({ lasers }) => {
-        lasers.forEach((laser) => {
+        .flatMap(({ lasers }) => {
+        return Observable
+            .fromArray(lasers)
+            .map((laser) => {
             const x = Number(laser.attr('cx')) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
             const y = Number(laser.attr('cy')) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
-            x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('cx', x) && laser.attr('cy', y);
+            return { x: x, y: y, laser: laser };
         });
     })
-        .subscribe(() => {
+        .subscribe(({ x, y, laser }) => {
+        x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr('cx', x) && laser.attr('cy', y);
     });
 }
 if (typeof window != 'undefined')
