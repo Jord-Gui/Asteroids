@@ -14,25 +14,35 @@ function asteroids() {
   const svg = document.getElementById("canvas")!;
   // make a group for the spaceship and a transform to move it and rotate it
   // to animate the spaceship you will update the transform property
-  let g = new Elem(svg,'g')
-    .attr("transform","translate(300 300) rotate(0)")  
-    .attr("velocity", 20)
-    .attr("rpm", 20)
-  
-  // create a polygon shape for the ship as a child of the transform group
-  let ship = new Elem(svg, 'polygon', g.elem) 
-    .attr("points","-15,20 15,20 0,-20") // this just creates the points of the ship
-    .attr("style","fill:black;stroke:purple;stroke-width:5") // this is just the colour
+  let 
+    g = new Elem(svg,'g')
+      .attr("transform","translate(300 300) rotate(0)")  
+      .attr("velocity", 10)
+      .attr("rpm", 20),
+    ship = new Elem(svg, 'polygon', g.elem) // create a polygon shape for the ship as a child of the transform group
+      .attr("points","-15,20 15,20 0,-20")
+      .attr("style","fill:black;stroke:purple;stroke-width:5"),
+    gameover = false;
 
   const
-    // observable for when player hits a key down 
-    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown'),
-    // observable for key up
-    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup'),
     // create a time observable for movement
-    timeObservable = Observable.interval(20),
+    timeObservable = Observable.interval(10),
+    // observable for when player hits a key down 
+    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)),
+    // observable for key up
+    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)),
     // current position of the ship
-    currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray;
+    currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray,
+    // array to store lasers
+    lasers: Elem[] = [],
+    // create main observable for game time
+    mainGame = timeObservable
+      .takeUntil(timeObservable.filter(_ => gameover === true))
+      .map(() => {
+        return {
+          lasers: lasers
+        }
+      })
 
   // function to move the ship depending on waht key is pressed
   function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, z: Number}): void {
@@ -66,6 +76,35 @@ function asteroids() {
   moveShip("KeyW", moveForward);
   moveShip("KeyA", moveACW);
   moveShip("KeyD", moveCW);
+
+  // create lasers when key is pressed down
+  keydown
+    .filter((e) => e.code === 'Space')
+    .map(() => {
+      // create a new laser
+      return new Elem(svg, 'circle')
+        .attr("cx", currentShipPosition[1])
+        .attr("cy", currentShipPosition[2])
+        .attr("z", currentShipPosition[3])
+        .attr("r", 2)
+        .attr("velocity", 20)
+        .attr("style", "fill:white;stroke:purple;stroke-width:1")
+      })
+    .subscribe((laser) => lasers.push(laser))
+  // make laser move
+  mainGame
+    .map(({lasers}) => {
+      lasers.forEach((laser) => {
+          // move laser based on direction of when it was initially shot
+          const x = Number(laser.attr('cx')) + Number(laser.attr("velocity"))*Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180));
+          const y = Number(laser.attr('cy')) + Number(laser.attr("velocity"))*Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180));
+          // laser disappears if it reaches the edge of the map, otherwise move it
+          x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? laser.elem.remove(): laser.attr('cx', x) && laser.attr('cy', y);
+      })
+    })
+    .subscribe(() => {
+
+    })
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.

@@ -3,12 +3,17 @@ function asteroids() {
     const svg = document.getElementById("canvas");
     let g = new Elem(svg, 'g')
         .attr("transform", "translate(300 300) rotate(0)")
-        .attr("velocity", 20)
-        .attr("rpm", 20);
-    let ship = new Elem(svg, 'polygon', g.elem)
+        .attr("velocity", 10)
+        .attr("rpm", 20), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 15,20 0,-20")
-        .attr("style", "fill:black;stroke:purple;stroke-width:5");
-    const keydown = Observable.fromEvent(document, 'keydown'), keyup = Observable.fromEvent(document, 'keyup'), timeObservable = Observable.interval(20), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform'));
+        .attr("style", "fill:black;stroke:purple;stroke-width:5"), gameover = false;
+    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], mainGame = timeObservable
+        .takeUntil(timeObservable.filter(_ => gameover === true))
+        .map(() => {
+        return {
+            lasers: lasers
+        };
+    });
     function moveShip(Key, moveFunction) {
         keydown
             .filter((e) => e.code === Key && !e.repeat)
@@ -36,6 +41,28 @@ function asteroids() {
     moveShip("KeyW", moveForward);
     moveShip("KeyA", moveACW);
     moveShip("KeyD", moveCW);
+    keydown
+        .filter((e) => e.code === 'Space')
+        .map(() => {
+        return new Elem(svg, 'circle')
+            .attr("cx", currentShipPosition[1])
+            .attr("cy", currentShipPosition[2])
+            .attr("z", currentShipPosition[3])
+            .attr("r", 2)
+            .attr("velocity", 20)
+            .attr("style", "fill:white;stroke:purple;stroke-width:1");
+    })
+        .subscribe((laser) => lasers.push(laser));
+    mainGame
+        .map(({ lasers }) => {
+        lasers.forEach((laser) => {
+            const x = Number(laser.attr('cx')) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            const y = Number(laser.attr('cy')) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
+            x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? laser.elem.remove() : laser.attr('cx', x) && laser.attr('cy', y);
+        });
+    })
+        .subscribe(() => {
+    });
 }
 if (typeof window != 'undefined')
     window.onload = () => {
