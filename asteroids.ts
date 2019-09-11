@@ -180,37 +180,23 @@ function asteroids() {
   mainObservable
     .filter(({time}) => time > 1000) // assume it doesn't take a second to complete the game and give time to create asteroids
     .filter(() => asteroids.length === 0)
-    .map(() => {
-      // create the You Win message
-      return new Elem(svg, "text")
-      .attr("x", 110)
-      .attr("y", svg.clientHeight/2)
-      .attr("fill", "green")
-      .attr("font-family", "liberation sans")
-      .attr("font-size", 80)
-    })
     .subscribe((win) => {
-      win.elem.textContent = "YOU WIN"
-      // change colour of ship
+      // display You Win message
+      document.getElementById("lives")!.innerHTML = "YOU WIN 💚"
+      document.getElementById("lives")!.style.color = "green"
+      // change colour of ship to green
       ship.attr("style", "fill:green;stroke:white;stroke-width:1")
       isGameOver = true
     })
 
-  // display Game Over message if the player loses
+  // display You Lose message if the player loses
   gameOver
     .filter(() => asteroids.length > 0) // check that the player is the one that lost
-    .map(() => {
-      // create the Game Over message
-      return new Elem(svg, "text")
-      .attr("x", 65)
-      .attr("y", svg.clientHeight/2)
-      .attr("fill", "red")
-      .attr("font-family", "liberation sans")
-      .attr("font-size", 80)
-    })
-    .subscribe((endGame) => {
-      endGame.elem.textContent = "GAME OVER"
-      // change colour of ship
+    .subscribe(() => {
+      // display Game Over message
+      document.getElementById("lives")!.innerHTML = "YOU LOSE 😡"
+      document.getElementById("lives")!.style.color = "red"
+      // change colour of ship to red
       ship.attr("style", "fill:red;stroke:white;stroke-width:1")
     }) 
 }

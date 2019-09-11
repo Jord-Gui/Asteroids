@@ -106,31 +106,17 @@ function asteroids() {
     mainObservable
         .filter(({ time }) => time > 1000)
         .filter(() => asteroids.length === 0)
-        .map(() => {
-        return new Elem(svg, "text")
-            .attr("x", 110)
-            .attr("y", svg.clientHeight / 2)
-            .attr("fill", "green")
-            .attr("font-family", "liberation sans")
-            .attr("font-size", 80);
-    })
         .subscribe((win) => {
-        win.elem.textContent = "YOU WIN";
+        document.getElementById("lives").innerHTML = "YOU WIN 💚";
+        document.getElementById("lives").style.color = "green";
         ship.attr("style", "fill:green;stroke:white;stroke-width:1");
         isGameOver = true;
     });
     gameOver
         .filter(() => asteroids.length > 0)
-        .map(() => {
-        return new Elem(svg, "text")
-            .attr("x", 65)
-            .attr("y", svg.clientHeight / 2)
-            .attr("fill", "red")
-            .attr("font-family", "liberation sans")
-            .attr("font-size", 80);
-    })
-        .subscribe((endGame) => {
-        endGame.elem.textContent = "GAME OVER";
+        .subscribe(() => {
+        document.getElementById("lives").innerHTML = "YOU LOSE 😡";
+        document.getElementById("lives").style.color = "red";
         ship.attr("style", "fill:red;stroke:white;stroke-width:1");
     });
 }
