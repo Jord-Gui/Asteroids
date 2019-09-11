@@ -104,8 +104,7 @@ function asteroids() {
         ship.attr("style", "fill:black;stroke:white;stroke-width:1");
     });
     mainObservable
-        .filter(({ time }) => time > 1000)
-        .filter(() => asteroids.length === 0)
+        .filter(({ time }) => time > 1000 && asteroids.length === 0)
         .subscribe((win) => {
         document.getElementById("lives").innerHTML = "YOU WIN 💚";
         document.getElementById("lives").style.color = "green";

@@ -178,8 +178,8 @@ function asteroids() {
 
   // display You Win message when all asteroids are destroyed
   mainObservable
-    .filter(({time}) => time > 1000) // assume it doesn't take a second to complete the game and give time to create asteroids
-    .filter(() => asteroids.length === 0)
+    // assume it doesn't take a second to complete the game and give time to create asteroids
+    .filter(({time}) => time > 1000 && asteroids.length === 0)
     .subscribe((win) => {
       // display You Win message
       document.getElementById("lives")!.innerHTML = "YOU WIN 💚"
