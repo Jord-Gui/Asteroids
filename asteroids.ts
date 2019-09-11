@@ -21,30 +21,30 @@ function asteroids() {
   let 
     // make a group for the spaceship and a transform to move it and rotate it
     // the spaceship is animated by updating the transform and rotate property
-    g = new Elem(svg,'g')
+    g: Elem = new Elem(svg,'g')
       .attr("transform","translate(300 300) rotate(0)")  
       .attr("velocity", 10)
       .attr("rpm", 10)
       .attr("hitbox", 20)
       .attr("invincible", "true"),
       // create a polygon shape for the ship as a child of the transform group
-      ship = new Elem(svg, 'polygon', g.elem)
+    ship: Elem = new Elem(svg, 'polygon', g.elem)
       .attr("points","-15,20 0,10 15,20 0,-20")
       .attr("style","fill:yellow;stroke:white;stroke-width:1"),
       // attribute to check whether the game is over
-      isGameOver = false;
+    isGameOver: boolean = false;
 
   const
     // create an interval of time that represents a time step in the game
-    mainInterval = Observable.interval(10),
+    mainInterval: Observable<number> = Observable.interval(10),
     // observable for actions that require the game to be over
-    gameOver = mainInterval.filter(_ => isGameOver === true),
+    gameOver: Observable<number> = mainInterval.filter(_ => isGameOver === true),
     // observable for when player hits a key down
-    keydown = Observable.fromEvent<KeyboardEvent>(document, "keydown").takeUntil(gameOver),
+    keydown: Observable<KeyboardEvent> = Observable.fromEvent<KeyboardEvent>(document, "keydown").takeUntil(gameOver),
     // observable for when there is a key up
-    keyup = Observable.fromEvent<KeyboardEvent>(document, "keyup").takeUntil(gameOver),
+    keyup: Observable<KeyboardEvent> = Observable.fromEvent<KeyboardEvent>(document, "keyup").takeUntil(gameOver),
     // regex that gets the current position of the ship and stores it in an array
-    currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")) as RegExpExecArray,
+    currentShipPosition: RegExpExecArray = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")) as RegExpExecArray,
     // array to store lasers after they are created
     lasers: Elem[] = [],
     // array to store asteroids after they are created
