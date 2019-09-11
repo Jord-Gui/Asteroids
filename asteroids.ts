@@ -77,11 +77,11 @@ function asteroids() {
     })
   }
   // function to move the ship anti-clockwise by subtracting from the rotation of the g element
-  const moveACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
+  const moveShipACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
   // function to move the ship clockwise by adding to the rotation of the g element
-  const moveCW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm"))})
+  const moveShipCW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm"))})
   // function to move the ship forward in the direction of the front of the ship and wrapping the ship around if it gets to the edge of the canvas
-  const moveForward = () => {
+  const moveShipForward = () => {
     // get the current position of the ship
     const x = Number(currentShipPosition[1])
     const y = Number(currentShipPosition[2])
@@ -93,9 +93,9 @@ function asteroids() {
     return {x: newX, y: newY, z: z}
   }
   // call the function to move the ship
-  moveShip("KeyW", moveForward);
-  moveShip("KeyA", moveACW);
-  moveShip("KeyD", moveCW);
+  moveShip("KeyW", moveShipForward);
+  moveShip("KeyA", moveShipACW);
+  moveShip("KeyD", moveShipCW);
 
   // create lasers whenever the space bar is pressed down
   keydown

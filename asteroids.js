@@ -34,9 +34,9 @@ function asteroids() {
             g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = z})`);
         });
     }
-    const moveACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
-    const moveCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
-    const moveForward = () => {
+    const moveShipACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
+    const moveShipCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), z: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
+    const moveShipForward = () => {
         const x = Number(currentShipPosition[1]);
         const y = Number(currentShipPosition[2]);
         const z = Number(currentShipPosition[3]);
@@ -44,9 +44,9 @@ function asteroids() {
         const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((z - 90) * (Math.PI / 180));
         return { x: newX, y: newY, z: z };
     };
-    moveShip("KeyW", moveForward);
-    moveShip("KeyA", moveACW);
-    moveShip("KeyD", moveCW);
+    moveShip("KeyW", moveShipForward);
+    moveShip("KeyA", moveShipACW);
+    moveShip("KeyD", moveShipCW);
     keydown
         .filter((e) => e.code === "Space")
         .map(() => {
