@@ -188,7 +188,7 @@ function asteroids() {
 
   // display game win message when all asteroids are destroyed
   mainObservable
-    .filter(({time}) => time>1000) // assuming it doesn't take a second to complete the game
+    .filter(({time}) => time>1000) // assume it doesn't take a second to complete the game and give time to create asteroids
     .filter(() => asteroids.length === 0)
     .subscribe(() => {
       // create the game win message
