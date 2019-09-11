@@ -28,7 +28,7 @@ function asteroids() {
         }
         else {
             nextX = x + velocity * Math.cos((rotation - 90) * (Math.PI / 180));
-            nextY = x + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
+            nextY = y + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
         }
         return { nextX: nextX, nextY: nextY };
     }
@@ -49,12 +49,8 @@ function asteroids() {
     const moveShipACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
     const moveShipCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
     const moveShipForward = () => {
-        const x = Number(currentShipPosition[1]);
-        const y = Number(currentShipPosition[2]);
-        const rotation = Number(currentShipPosition[3]);
-        const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(g.attr("velocity")) * Math.cos((rotation - 90) * (Math.PI / 180));
-        const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(g.attr("velocity")) * Math.sin((rotation - 90) * (Math.PI / 180));
-        return { x: newX, y: newY, rotation: rotation };
+        const newPosition = nextPosition(Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true);
+        return { x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3]) };
     };
     moveShip("KeyW", moveShipForward);
     moveShip("KeyA", moveShipACW);
@@ -76,10 +72,9 @@ function asteroids() {
         return Observable
             .fromArray(lasers)
             .map((laser) => {
-            const x = Number(laser.attr("cx")) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr("z")) - 90) * (Math.PI / 180));
-            const y = Number(laser.attr("cy")) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr("z")) - 90) * (Math.PI / 180));
-            const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
-            return { x: x, y: y, laser: laser, collidedAsteroids: collidedAsteroids };
+            const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("z")), false);
+            const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
+            return { x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids };
         });
     })
         .subscribe(({ x, y, laser, collidedAsteroids }) => {
@@ -108,12 +103,9 @@ function asteroids() {
         return Observable
             .fromArray(asteroids)
             .map((asteroid) => {
-            const x = Number(asteroid.attr("cx"));
-            const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(asteroid.attr("velocity")) * Math.cos((Number(asteroid.attr("z")) - 90) * (Math.PI / 180));
-            const y = Number(asteroid.attr("cy"));
-            const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(asteroid.attr("velocity")) * Math.sin((Number(asteroid.attr("z")) - 90) * (Math.PI / 180));
-            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
-            return { x: newX, y: newY, asteroid: asteroid, collision: collisionDetected };
+            const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("z")), true);
+            const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
+            return { x: newPosition.nextX, y: newPosition.nextY, asteroid: asteroid, collision: collisionDetected };
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
