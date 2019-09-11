@@ -76,6 +76,7 @@ function asteroids() {
       g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = rotation})`)
     })
   }
+  
   // function to move the ship anti-clockwise by subtracting from the rotation of the g element
   const moveShipACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
   // function to move the ship clockwise by adding to the rotation of the g element
@@ -86,6 +87,7 @@ function asteroids() {
     const newPosition = nextPosition(svg, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true)
     return {x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3])}
   }
+  
   // call the function to move the ship
   moveShip("KeyW", moveShipForward);
   moveShip("KeyA", moveShipACW);
@@ -107,7 +109,8 @@ function asteroids() {
         .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1")
       })
     .subscribe((laser) => lasers.push(laser))
-  // make laser move at each time step
+  
+   // make laser move at each time step
   mainObservable
     .flatMap(({lasers}) => {
       return Observable // turn the lasers array into an observable that can then be flatmapped
@@ -146,7 +149,8 @@ function asteroids() {
         .attr("style","fill:black;stroke:white;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
-  // give the asteroids movement at each time step
+  
+    // give the asteroids movement at each time step
   mainObservable
     .flatMap(({asteroids}) => {
       return Observable
