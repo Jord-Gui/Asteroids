@@ -7,9 +7,9 @@ function asteroids() {
         .attr("rpm", 10)
         .attr("hitbox", 20), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:black;stroke:white;stroke-width:1"), gameOver = false;
-    const tickTockInterval = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(tickTockInterval.filter(_ => gameOver === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(tickTockInterval.filter(_ => gameOver === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
-        .takeUntil(tickTockInterval.filter(_ => gameOver === true))
+        .attr("style", "fill:black;stroke:white;stroke-width:1"), isGameOver = false;
+    const tickTockInterval = Observable.interval(10), gameOver = tickTockInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, 'keydown').takeUntil(gameOver), keyup = Observable.fromEvent(document, 'keyup').takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
+        .takeUntil(gameOver)
         .map(() => {
         return {
             lasers: lasers,
@@ -105,7 +105,12 @@ function asteroids() {
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
-        collision ? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), gameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
+        collision ? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), isGameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
+    });
+    gameOver
+        .subscribe(() => {
+        let endGame = new Elem(svg, 'text').attr('x', 300).attr('y', 300).attr('fill', 'white');
+        endGame.elem.textContent = "GAME OVER";
     });
 }
 if (typeof window != 'undefined')

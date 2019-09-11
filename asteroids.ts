@@ -12,7 +12,7 @@ function asteroids() {
   // Explain which ideas you have used ideas from the lectures to 
   // create reusable, generic functions.
   const svg = document.getElementById("canvas")!;
-  
+
   let 
     // make a group for the spaceship and a transform to move it and rotate it
     // the spaceship is animated by updating the transform and rotate property
@@ -26,15 +26,17 @@ function asteroids() {
       .attr("points","-15,20 0,10 15,20 0,-20")
       .attr("style","fill:black;stroke:white;stroke-width:1"),
       // attribute to check whether the game is over
-      gameOver = false;
+      isGameOver = false;
 
   const
     // create an interval of time that represents a time step in the game
     tickTockInterval = Observable.interval(10),
+    // observable for when the game is over
+    gameOver = tickTockInterval.filter(_ => isGameOver === true),
     // observable for when player hits a key down
-    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown').takeUntil(tickTockInterval.filter(_ => gameOver === true)),
+    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown').takeUntil(gameOver),
     // observable for when there is a key up
-    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup').takeUntil(tickTockInterval.filter(_ => gameOver === true)),
+    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup').takeUntil(gameOver),
     // regex that gets the current position of the ship and stores it in an array
     currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray,
     // array to store lasers after they are created
@@ -43,7 +45,7 @@ function asteroids() {
     asteroids: Elem[] = [],
     // main observable that represents the passage of time in the game
     tickTockObservable = tickTockInterval
-      .takeUntil(tickTockInterval.filter(_ => gameOver === true))
+      .takeUntil(gameOver)
       .map(() => {
         return {
           lasers: lasers,
@@ -150,26 +152,33 @@ function asteroids() {
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
 
-    // give the asteroids movement at each time step
-    tickTockObservable
-      .flatMap(({asteroids}) => {
-        return Observable
-          .fromArray(asteroids) // turn the array of asteroids into an observable which can then be flatmapped 
-          .map((asteroid) => {
-            // update the position of the asteroid and check if asteroid has reached edge of map, in which case wrap around
-            const x = Number(asteroid.attr("cx"))
-            const newX = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Number(asteroid.attr("velocity"))*Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-            const y = Number(asteroid.attr("cy"))
-            const newY = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Number(asteroid.attr("velocity"))*Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-            // check if the asteroid has collided with the ship
-            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
-            return {x: newX, y: newY, asteroid: asteroid, collision: collisionDetected}
-          })
-      })
-      .subscribe(({x, y, asteroid, collision}) => {
-        // update the position of the asteroid but if the ship collides with an asteroid it is game over
-        collision? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), gameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
-      })
+  // give the asteroids movement at each time step
+  tickTockObservable
+    .flatMap(({asteroids}) => {
+      return Observable
+        .fromArray(asteroids) // turn the array of asteroids into an observable which can then be flatmapped 
+        .map((asteroid) => {
+          // update the position of the asteroid and check if asteroid has reached edge of map, in which case wrap around
+          const x = Number(asteroid.attr("cx"))
+          const newX = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Number(asteroid.attr("velocity"))*Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
+          const y = Number(asteroid.attr("cy"))
+          const newY = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Number(asteroid.attr("velocity"))*Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
+          // check if the asteroid has collided with the ship
+          const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
+          return {x: newX, y: newY, asteroid: asteroid, collision: collisionDetected}
+        })
+    })
+    .subscribe(({x, y, asteroid, collision}) => {
+      // update the position of the asteroid but if the ship collides with an asteroid it is game over
+      collision? (ship.attr("style", "fill:red;stroke:white;stroke-width:1"), isGameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
+    })
+
+  // observable to check when it is game over and execute game over actions
+  gameOver
+    .subscribe(() => {
+      let endGame = new Elem(svg, 'text').attr('x', 300).attr('y', 300).attr('fill', 'white')
+      endGame.elem.textContent = "GAME OVER"
+    }) 
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.
