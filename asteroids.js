@@ -11,7 +11,8 @@ function asteroids() {
         .takeUntil(timeObservable.filter(_ => gameover === true))
         .map(() => {
         return {
-            lasers: lasers
+            lasers: lasers,
+            asteroids: asteroids
         };
     });
     function moveShip(Key, moveFunction) {
@@ -49,7 +50,7 @@ function asteroids() {
             .attr("cy", currentShipPosition[2])
             .attr("z", currentShipPosition[3])
             .attr("r", 2)
-            .attr("velocity", 20)
+            .attr("velocity", 10)
             .attr("style", "fill:black;stroke:red;stroke-width:1");
     })
         .subscribe((laser) => lasers.push(laser));
@@ -65,6 +66,33 @@ function asteroids() {
     })
         .subscribe(({ x, y, laser }) => {
         x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr('cx', x) && laser.attr('cy', y);
+    });
+    timeObservable
+        .takeUntil(timeObservable.filter(i => i === 50))
+        .map(() => {
+        return new Elem(svg, 'circle')
+            .attr("r", 25)
+            .attr("cx", Math.floor(Math.random() * svg.clientWidth))
+            .attr("cy", Math.floor(Math.random() * svg.clientHeight))
+            .attr("z", Math.floor(Math.random() * 360))
+            .attr("velocity", 2)
+            .attr("style", "fill:black;stroke:white;stroke-width:1");
+    })
+        .subscribe((asteroid) => asteroids.push(asteroid));
+    mainGame
+        .flatMap(({ asteroids }) => {
+        return Observable
+            .fromArray(asteroids)
+            .map((asteroid) => {
+            const x = Number(asteroid.attr("cx"));
+            const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(asteroid.attr("velocity")) * Math.cos((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
+            const y = Number(asteroid.attr("cy"));
+            const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(asteroid.attr("velocity")) * Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
+            return { x: newX, y: newY, asteroid: asteroid };
+        });
+    })
+        .subscribe(({ x, y, asteroid }) => {
+        asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
 }
 if (typeof window != 'undefined')
