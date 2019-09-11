@@ -9,8 +9,12 @@ function asteroids() {
   // create reusable, generic functions.
 
   // HTML file contains instructions on how to play the game. 
-  // Detail of design given below: 
-  // The...
+  /*Definition of functions that help with logic calculation can be
+    found in the helperfunctions.ts file
+  */
+  /* Detail of design given below: 
+    The...
+  */
 
   const svg = document.getElementById("canvas")!;
 
@@ -79,7 +83,7 @@ function asteroids() {
   // function to move the ship forward in the direction of the front of the ship and wrapping the ship around if it gets to the edge of the canvas
   const moveShipForward = () => {
     // update ship position and wrap it around if it has reached the edges of the canvas
-    const newPosition = nextPosition(Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true)
+    const newPosition = nextPosition(svg, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true)
     return {x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3])}
   }
   // call the function to move the ship
@@ -108,7 +112,7 @@ function asteroids() {
         .fromArray(lasers)
         .map((laser) => {
           // move laser based on direction of when it was initially shot
-          const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false)
+          const newPosition = nextPosition(svg, Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false)
           // get the asteroids that the laser has hit
           const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
           return {x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids}
@@ -147,7 +151,7 @@ function asteroids() {
         .fromArray(asteroids) // turn the array of asteroids into an observable which can then be flatmapped 
         .map((asteroid) => {
           // update the position of the asteroid and check if asteroid has reached edge of map, in which case wrap around
-          const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true)
+          const newPosition = nextPosition(svg, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true)
           // check if the asteroid has collided with the ship
           const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")))
           return {x: newPosition.nextX, y: newPosition.nextY, asteroid: asteroid, collision: collisionDetected}
@@ -199,27 +203,6 @@ function asteroids() {
       // change colour of ship
       ship.attr("style", "fill:red;stroke:white;stroke-width:1")
     }) 
-
-  // a function that determines whether two circles have collided 
-  //by determining whether the distance between the centre of the two circles is less than the sum of their radii
-  function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
-    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
-    return distance < sum? true: false;
-  }
-
-  // a function that determines the next position of an object based on its direction and velocity
-  function nextPosition(x: number, y: number, velocity: number, rotation: number, wrapping: boolean): {nextX: number, nextY: number} {
-    let nextX: number, nextY: number;
-    if (wrapping) {
-      nextX = x<0? svg.clientWidth: x>svg.clientWidth? 0: x+velocity*Math.cos((rotation-90)*(Math.PI/180))
-      nextY = y<0? svg.clientHeight: y>svg.clientHeight? 0: y+velocity*Math.sin((rotation-90)*(Math.PI/180))
-    }
-    else {
-      nextX = x + velocity*Math.cos((rotation-90)*(Math.PI/180));
-      nextY = y + velocity*Math.sin((rotation-90)*(Math.PI/180));
-    }
-    return {nextX: nextX, nextY: nextY}
-  }
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.

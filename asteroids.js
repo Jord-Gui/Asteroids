@@ -35,7 +35,7 @@ function asteroids() {
     const moveShipACW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm")) });
     const moveShipCW = () => ({ x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm")) });
     const moveShipForward = () => {
-        const newPosition = nextPosition(Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true);
+        const newPosition = nextPosition(svg, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true);
         return { x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3]) };
     };
     moveShip("KeyW", moveShipForward);
@@ -58,7 +58,7 @@ function asteroids() {
         return Observable
             .fromArray(lasers)
             .map((laser) => {
-            const newPosition = nextPosition(Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false);
+            const newPosition = nextPosition(svg, Number(laser.attr("cx")), Number(laser.attr("cy")), Number(laser.attr("velocity")), Number(laser.attr("rotation")), false);
             const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
             return { x: newPosition.nextX, y: newPosition.nextY, laser: laser, collidedAsteroids: collidedAsteroids };
         });
@@ -89,7 +89,7 @@ function asteroids() {
         return Observable
             .fromArray(asteroids)
             .map((asteroid) => {
-            const newPosition = nextPosition(Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true);
+            const newPosition = nextPosition(svg, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")), Number(asteroid.attr("velocity")), Number(asteroid.attr("rotation")), true);
             const collisionDetected = collisionDetectedCircles(newPosition.nextX, newPosition.nextY, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr("r")), Number(g.attr("hitbox")));
             return { x: newPosition.nextX, y: newPosition.nextY, asteroid: asteroid, collision: collisionDetected };
         });
@@ -129,22 +129,6 @@ function asteroids() {
         endGame.elem.textContent = "GAME OVER";
         ship.attr("style", "fill:red;stroke:white;stroke-width:1");
     });
-    function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
-        const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
-        return distance < sum ? true : false;
-    }
-    function nextPosition(x, y, velocity, rotation, wrapping) {
-        let nextX, nextY;
-        if (wrapping) {
-            nextX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + velocity * Math.cos((rotation - 90) * (Math.PI / 180));
-            nextY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
-        }
-        else {
-            nextX = x + velocity * Math.cos((rotation - 90) * (Math.PI / 180));
-            nextY = y + velocity * Math.sin((rotation - 90) * (Math.PI / 180));
-        }
-        return { nextX: nextX, nextY: nextY };
-    }
 }
 if (typeof window != 'undefined')
     window.onload = () => {
