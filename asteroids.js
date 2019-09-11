@@ -9,12 +9,13 @@ function asteroids() {
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
         .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false;
-    const tickTockInterval = Observable.interval(10), gameOver = tickTockInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], tickTockObservable = tickTockInterval
+    const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
         .takeUntil(gameOver)
-        .map(() => {
+        .map((time) => {
         return {
             lasers: lasers,
-            asteroids: asteroids
+            asteroids: asteroids,
+            time: time
         };
     });
     function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
@@ -37,7 +38,7 @@ function asteroids() {
         keydown
             .filter((e) => e.code === Key && !e.repeat)
             .flatMap(() => {
-            return tickTockInterval
+            return mainInterval
                 .takeUntil(keyup)
                 .map(() => {
                 return { x: String(moveFunction().x), y: String(moveFunction().y), rotation: String(moveFunction().rotation) };
@@ -68,7 +69,7 @@ function asteroids() {
             .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1");
     })
         .subscribe((laser) => lasers.push(laser));
-    tickTockObservable
+    mainObservable
         .flatMap(({ lasers }) => {
         return Observable
             .fromArray(lasers)
@@ -87,8 +88,8 @@ function asteroids() {
             lasers.splice(lasers.indexOf(laser), 1);
         });
     });
-    tickTockInterval
-        .takeUntil(tickTockInterval.filter(i => i === 50))
+    mainInterval
+        .takeUntil(mainInterval.filter(i => i === 50))
         .map(() => {
         return new Elem(svg, "circle")
             .attr("r", 25)
@@ -99,7 +100,7 @@ function asteroids() {
             .attr("style", "fill:black;stroke:white;stroke-width:1");
     })
         .subscribe((asteroid) => asteroids.push(asteroid));
-    tickTockObservable
+    mainObservable
         .flatMap(({ asteroids }) => {
         return Observable
             .fromArray(asteroids)
@@ -112,16 +113,14 @@ function asteroids() {
         .subscribe(({ x, y, asteroid, collision }) => {
         collision && (g.attr("invincible") === "false") ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
-    tickTockInterval
-        .takeUntil(gameOver)
-        .filter(t => t > 3000)
+    mainObservable
+        .filter(({ time }) => time > 3000)
         .subscribe(() => {
         g.attr("invincible", "false");
         ship.attr("style", "fill:black;stroke:white;stroke-width:1");
     });
-    tickTockInterval
-        .takeUntil(gameOver)
-        .filter(t => t > 1000)
+    mainObservable
+        .filter(({ time }) => time > 1000)
         .filter(() => asteroids.length === 0)
         .subscribe(() => {
         let win = new Elem(svg, "text")
