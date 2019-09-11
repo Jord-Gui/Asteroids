@@ -112,12 +112,21 @@ function asteroids() {
           // move laser based on direction of when it was initially shot
           const x = Number(laser.attr('cx')) + Number(laser.attr("velocity"))*Math.cos((Number(laser.attr('z'))-90)*(Math.PI/180));
           const y = Number(laser.attr('cy')) + Number(laser.attr("velocity"))*Math.sin((Number(laser.attr('z'))-90)*(Math.PI/180));
-          return {x: x, y: y, laser: laser}
+          // get the asteroids that the laser has hit
+          const collidedAsteroids = asteroids.filter((a: Elem) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))))
+          return {x: x, y: y, laser: laser, collidedAsteroids: collidedAsteroids}
         })
     })
-    .subscribe(({x, y, laser}) => {
-        // laser disappears if it reaches the edge of the map, otherwise move it
+    .subscribe(({x, y, laser, collidedAsteroids}) => {
+        // move laser and disappear if it reaches the edge of the map
         x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)): laser.attr('cx', x) && laser.attr('cy', y);
+        // destroy the asteroid that has been hit as well as the laser
+        collidedAsteroids.forEach((asteroid) => {
+          asteroid.elem.remove() // remove asteroid svg element from canvas
+          asteroids.splice(asteroids.indexOf(asteroid), 1) // remove asteroid object from array
+          laser.elem.remove() // remove laser svg element from canvas
+          lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
+        })
     })
 
   // Observable to create asteroids in set intervals

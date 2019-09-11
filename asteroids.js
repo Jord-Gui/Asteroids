@@ -66,11 +66,18 @@ function asteroids() {
             .map((laser) => {
             const x = Number(laser.attr('cx')) + Number(laser.attr("velocity")) * Math.cos((Number(laser.attr('z')) - 90) * (Math.PI / 180));
             const y = Number(laser.attr('cy')) + Number(laser.attr("velocity")) * Math.sin((Number(laser.attr('z')) - 90) * (Math.PI / 180));
-            return { x: x, y: y, laser: laser };
+            const collidedAsteroids = asteroids.filter((a) => collisionDetectedCircles(x, y, Number(a.attr('cx')), Number(a.attr('cy')), Number(laser.attr('r')), Number(a.attr('r'))));
+            return { x: x, y: y, laser: laser, collidedAsteroids: collidedAsteroids };
         });
     })
-        .subscribe(({ x, y, laser }) => {
+        .subscribe(({ x, y, laser, collidedAsteroids }) => {
         x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr('cx', x) && laser.attr('cy', y);
+        collidedAsteroids.forEach((asteroid) => {
+            asteroid.elem.remove();
+            asteroids.splice(asteroids.indexOf(asteroid), 1);
+            laser.elem.remove();
+            lasers.splice(lasers.indexOf(laser), 1);
+        });
     });
     timeObservable
         .takeUntil(timeObservable.filter(i => i === 50))
