@@ -180,7 +180,7 @@ function asteroids() {
   // make ship invincible for first 5 seconds so asteroids that spawn on it don't make game over immediately 
   tickTockInterval
     .takeUntil(gameOver)
-    .filter(t => t > 5000)
+    .filter(t => t > 3000)
     .subscribe(() => {
       g.attr("invincible", "false")
       ship.attr("style","fill:black;stroke:white;stroke-width:1")

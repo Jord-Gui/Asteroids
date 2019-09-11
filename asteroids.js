@@ -114,7 +114,7 @@ function asteroids() {
     });
     tickTockInterval
         .takeUntil(gameOver)
-        .filter(t => t > 5000)
+        .filter(t => t > 3000)
         .subscribe(() => {
         g.attr("invincible", "false");
         ship.attr("style", "fill:black;stroke:white;stroke-width:1");
