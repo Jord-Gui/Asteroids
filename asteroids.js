@@ -4,17 +4,22 @@ function asteroids() {
     let g = new Elem(svg, 'g')
         .attr("transform", "translate(300 300) rotate(0)")
         .attr("velocity", 10)
-        .attr("rpm", 10), ship = new Elem(svg, 'polygon', g.elem)
+        .attr("rpm", 10)
+        .attr("hitbox", 20), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:black;stroke:white;stroke-width:1"), gameover = false;
-    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], mainGame = timeObservable
-        .takeUntil(timeObservable.filter(_ => gameover === true))
+        .attr("style", "fill:black;stroke:white;stroke-width:1"), gameOver = false;
+    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameOver === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameOver === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], mainGame = timeObservable
+        .takeUntil(timeObservable.filter(_ => gameOver === true))
         .map(() => {
         return {
             lasers: lasers,
             asteroids: asteroids
         };
     });
+    function collisionDetectedCircles(x1, y1, x2, y2, r1, r2) {
+        const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2), sum = r1 + r2;
+        return distance < sum ? true : false;
+    }
     function moveShip(Key, moveFunction) {
         keydown
             .filter((e) => e.code === Key && !e.repeat)
@@ -88,11 +93,12 @@ function asteroids() {
             const newX = x < 0 ? svg.clientWidth : x > svg.clientWidth ? 0 : x + Number(asteroid.attr("velocity")) * Math.cos((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
             const y = Number(asteroid.attr("cy"));
             const newY = y < 0 ? svg.clientHeight : y > svg.clientHeight ? 0 : y + Number(asteroid.attr("velocity")) * Math.sin((Number(asteroid.attr('z')) - 90) * (Math.PI / 180));
-            return { x: newX, y: newY, asteroid: asteroid };
+            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr('r')), Number(g.attr('hitbox')));
+            return { x: newX, y: newY, asteroid: asteroid, collision: collisionDetected };
         });
     })
-        .subscribe(({ x, y, asteroid }) => {
-        asteroid.attr("cx", x), asteroid.attr("cy", y);
+        .subscribe(({ x, y, asteroid, collision }) => {
+        collision ? (ship.elem.remove(), gameOver = true) : asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
 }
 if (typeof window != 'undefined')

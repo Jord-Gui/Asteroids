@@ -18,21 +18,22 @@ function asteroids() {
     g = new Elem(svg,'g')
       .attr("transform","translate(300 300) rotate(0)")  
       .attr("velocity", 10)
-      .attr("rpm", 10),
+      .attr("rpm", 10)
+      .attr("hitbox", 20),
 
       ship = new Elem(svg, 'polygon', g.elem) // create a polygon shape for the ship as a child of the transform group
       .attr("points","-15,20 0,10 15,20 0,-20")
       .attr("style","fill:black;stroke:white;stroke-width:1"),
     
-      gameover = false;
+      gameOver = false;
 
   const
     // create a time observable for movement
     timeObservable = Observable.interval(10),
     // observable for when player hits a key down 
-    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)),
+    keydown = Observable.fromEvent<KeyboardEvent>(document, 'keydown').takeUntil(timeObservable.filter(_ => gameOver === true)),
     // observable for key up
-    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)),
+    keyup = Observable.fromEvent<KeyboardEvent>(document, 'keyup').takeUntil(timeObservable.filter(_ => gameOver === true)),
     // current position of the ship
     currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray,
     // array to store lasers
@@ -41,13 +42,19 @@ function asteroids() {
     asteroids: Elem[] = [],
     // create main observable for game time
     mainGame = timeObservable
-      .takeUntil(timeObservable.filter(_ => gameover === true))
+      .takeUntil(timeObservable.filter(_ => gameOver === true))
       .map(() => {
         return {
           lasers: lasers,
           asteroids: asteroids
         }
       })
+
+  // a function that determines whether two circles have collided
+  function collisionDetectedCircles(x1: number, y1: number, x2: number, y2: number, r1: number, r2: number): boolean {
+    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2), sum = r1+r2;
+    return distance < sum? true: false;
+  }
 
   // function to move the ship depending on waht key is pressed
   function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, z: Number}): void {
@@ -139,11 +146,13 @@ function asteroids() {
             const newX = x < 0? svg.clientWidth: x > svg.clientWidth? 0: x + Number(asteroid.attr("velocity"))*Math.cos((Number(asteroid.attr('z'))-90)*(Math.PI/180))
             const y = Number(asteroid.attr("cy"))
             const newY = y < 0? svg.clientHeight: y > svg.clientHeight? 0: y + Number(asteroid.attr("velocity"))*Math.sin((Number(asteroid.attr('z'))-90)*(Math.PI/180))
-            return {x: newX, y: newY, asteroid: asteroid}
+                      // check if the asteroid hits the ship
+            const collisionDetected = collisionDetectedCircles(x, y, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(asteroid.attr('r')), Number(g.attr('hitbox')))
+            return {x: newX, y: newY, asteroid: asteroid, collision: collisionDetected}
           })
       })
-      .subscribe(({x, y, asteroid}) => {
-        asteroid.attr("cx", x), asteroid.attr("cy", y)
+      .subscribe(({x, y, asteroid, collision}) => {
+        collision? (ship.elem.remove(), gameOver=true): asteroid.attr("cx", x), asteroid.attr("cy", y)
       })
 }
 
