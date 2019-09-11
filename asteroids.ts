@@ -21,8 +21,8 @@ function asteroids() {
       .attr("rpm", 10),
 
       ship = new Elem(svg, 'polygon', g.elem) // create a polygon shape for the ship as a child of the transform group
-      .attr("points","-15,20 15,20 0,-20")
-      .attr("style","fill:black;stroke:purple;stroke-width:5"),
+      .attr("points","-15,20 0,10 15,20 0,-20")
+      .attr("style","fill:black;stroke:white;stroke-width:1"),
     
       gameover = false;
 
@@ -37,6 +37,8 @@ function asteroids() {
     currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')) as RegExpExecArray,
     // array to store lasers
     lasers: Elem[] = [],
+    // array to store asteroids
+    asteroids: Elem[] = [],
     // create main observable for game time
     mainGame = timeObservable
       .takeUntil(timeObservable.filter(_ => gameover === true))
@@ -90,7 +92,7 @@ function asteroids() {
         .attr("z", currentShipPosition[3])
         .attr("r", 2)
         .attr("velocity", 20)
-        .attr("style", "fill:white;stroke:purple;stroke-width:1")
+        .attr("style", "fill:black;stroke:red;stroke-width:1")
       })
     .subscribe((laser) => lasers.push(laser))
   // make laser move
@@ -109,6 +111,8 @@ function asteroids() {
         // laser disappears if it reaches the edge of the map, otherwise move it
         x<0 || y<0 || x>svg.clientWidth || y>svg.clientHeight? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)): laser.attr('cx', x) && laser.attr('cy', y);
     })
+
+  // create asteroids in set intervals
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.

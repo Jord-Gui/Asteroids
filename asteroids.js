@@ -5,9 +5,9 @@ function asteroids() {
         .attr("transform", "translate(300 300) rotate(0)")
         .attr("velocity", 10)
         .attr("rpm", 10), ship = new Elem(svg, 'polygon', g.elem)
-        .attr("points", "-15,20 15,20 0,-20")
-        .attr("style", "fill:black;stroke:purple;stroke-width:5"), gameover = false;
-    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], mainGame = timeObservable
+        .attr("points", "-15,20 0,10 15,20 0,-20")
+        .attr("style", "fill:black;stroke:white;stroke-width:1"), gameover = false;
+    const timeObservable = Observable.interval(10), keydown = Observable.fromEvent(document, 'keydown').takeUntil(timeObservable.filter(_ => gameover === true)), keyup = Observable.fromEvent(document, 'keyup').takeUntil(timeObservable.filter(_ => gameover === true)), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr('transform')), lasers = [], asteroids = [], mainGame = timeObservable
         .takeUntil(timeObservable.filter(_ => gameover === true))
         .map(() => {
         return {
@@ -50,7 +50,7 @@ function asteroids() {
             .attr("z", currentShipPosition[3])
             .attr("r", 2)
             .attr("velocity", 20)
-            .attr("style", "fill:white;stroke:purple;stroke-width:1");
+            .attr("style", "fill:black;stroke:red;stroke-width:1");
     })
         .subscribe((laser) => lasers.push(laser));
     mainGame
