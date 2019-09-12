@@ -37,8 +37,12 @@ function asteroids() {
     startTimer = new Elem(svg, 'text')
       .attr('x', 50)
       .attr('y', 100)
-      .attr('fill', 'white')
+      .attr('fill', 'black')
       .attr('font-size', 100)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1)
+    // set startTime initial value
+    startTimer.elem.textContent = "3"
 
   const
     // create an interval of time that represents a time step in the game
@@ -63,7 +67,7 @@ function asteroids() {
           laserArray: lasers,
           asteroidArray: asteroids,
           time: time,
-          startTime: startTimer
+          countDown: startTimer
         }
       })
 
@@ -144,7 +148,7 @@ function asteroids() {
 
   // Observable to create a random number of asteroids
   mainInterval
-    .takeUntil(mainInterval.filter(i => i === 50))
+    .takeUntil(mainInterval.filter((t) => t === 50))
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
@@ -174,14 +178,28 @@ function asteroids() {
       // update the position of the asteroid but if the ship collides with an asteroid it is game over
       collision && (g.attr("invincible") === "false")? isGameOver=true: asteroid.attr("cx", x), asteroid.attr("cy", y)
     })
-
-  // make ship invincible for first 5 seconds so asteroids that spawn on it don't make game over immediately 
+  
+  // animate the countdown timer 
+  // make ship invincible for first 3 seconds in case asteroids spawn on it
   mainObservable
-    .filter(({time}) => time > 3000)
-    .subscribe(() => {
+  .filter(({time}) => time%1000 === 0)
+  // refactor if time permits
+  .subscribe(({time, countDown}) => {
+    if (time === 1000) {
+      countDown.elem.textContent = "2"
+    } 
+    else if (time === 2000) {
+      countDown.elem.textContent = "1"
+    }
+    else if (time === 3000) {
+      countDown.elem.textContent = "GO!"
       g.attr("invincible", "false")
       ship.attr("style","fill:black;stroke:white;stroke-width:1")
-    })
+    }
+    else {
+      countDown.elem.remove()
+    }
+  })
 
   // display You Win message when all asteroids are destroyed
   mainObservable

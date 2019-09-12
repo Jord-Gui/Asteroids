@@ -11,8 +11,11 @@ function asteroids() {
         .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false, startTimer = new Elem(svg, 'text')
         .attr('x', 50)
         .attr('y', 100)
-        .attr('fill', 'white')
-        .attr('font-size', 100);
+        .attr('fill', 'black')
+        .attr('font-size', 100)
+        .attr("stroke", "white")
+        .attr("stroke-width", 1);
+    startTimer.elem.textContent = "3";
     const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
         .takeUntil(gameOver)
         .map((time) => {
@@ -20,7 +23,7 @@ function asteroids() {
             laserArray: lasers,
             asteroidArray: asteroids,
             time: time,
-            startTime: startTimer
+            countDown: startTimer
         };
     });
     function moveShip(Key, moveFunction) {
@@ -78,7 +81,7 @@ function asteroids() {
         });
     });
     mainInterval
-        .takeUntil(mainInterval.filter(i => i === 50))
+        .takeUntil(mainInterval.filter((t) => t === 50))
         .map(() => {
         return new Elem(svg, "circle")
             .attr("r", 30)
@@ -103,10 +106,22 @@ function asteroids() {
         collision && (g.attr("invincible") === "false") ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
     });
     mainObservable
-        .filter(({ time }) => time > 3000)
-        .subscribe(() => {
-        g.attr("invincible", "false");
-        ship.attr("style", "fill:black;stroke:white;stroke-width:1");
+        .filter(({ time }) => time % 1000 === 0)
+        .subscribe(({ time, countDown }) => {
+        if (time === 1000) {
+            countDown.elem.textContent = "2";
+        }
+        else if (time === 2000) {
+            countDown.elem.textContent = "1";
+        }
+        else if (time === 3000) {
+            countDown.elem.textContent = "GO!";
+            g.attr("invincible", "false");
+            ship.attr("style", "fill:black;stroke:white;stroke-width:1");
+        }
+        else {
+            countDown.elem.remove();
+        }
     });
     mainObservable
         .filter(({ time, asteroidArray }) => time > 1000 && asteroidArray.length === 0)
