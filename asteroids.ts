@@ -40,6 +40,8 @@ function asteroids() {
       .attr("style","fill:yellow;stroke:white;stroke-width:1"),
     // set the number of lives that the ship has
     lives: number = 3,
+    // set the initial level
+    wave: number = 1,
     // countdown to let players get ready to play at the start of the game
     startTimer = new Elem(svg, 'text')
       .attr('x', 50)
@@ -92,7 +94,7 @@ function asteroids() {
   moveLaser()
 
   // populate the game with asteroids that move randomly
-  createAsteroids(4)
+  summonAsteroids()
   moveAsteroid()
 
   // check that ship has limited invincibility
@@ -100,9 +102,6 @@ function asteroids() {
 
   // animate the count down timer
   animateCountdownTimer()
-
-  // check if the player has won the game
-  playerWin()
 
   // check if the player has lost the game
   playerLose()
@@ -201,7 +200,7 @@ function asteroids() {
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("rotation", Math.floor(Math.random()*360))
-        .attr("velocity", 2)
+        .attr("velocity", 1)
         .attr("style","fill:black;stroke:white;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
@@ -225,7 +224,7 @@ function asteroids() {
       // the ship loses a life if it collides with an asteroid
       if (collision && (g.attr("invincible") === "false")) {
         lives-- 
-        (document.getElementById("lives")!.innerHTML = `Lives: ${"🚀".repeat(lives)}`)
+        document.getElementById("lives")!.innerHTML = `Lives: ${"🚀".repeat(lives)}`
         if (lives > 0) resetShip()
       }
       // update position of asteroid
@@ -278,12 +277,26 @@ function asteroids() {
     })
   }
 
-  // display You Win message when all asteroids are destroyed
-  function playerWin() {
+  // increment level if all asteroids are destroyed
+  function summonAsteroids() {
     mainObservable
-    // assume it doesn't take a second to complete the game and give time to create asteroids
-    .filter(({time, asteroidArray}) => time > 1000 && asteroidArray.length === 0)
-    .subscribe((win) => {
+    // asteroids need time to be created so check if asteroid array is empty
+    // in intervals to allow this
+    .filter(({time, asteroidArray}) => time%1000 === 0 && asteroidArray.length === 0)
+    .subscribe(() => {
+      if (wave <= 3) {
+        document.getElementById("waves")!.innerHTML = `Wave: ${wave}`
+        createAsteroids(wave*2)
+        wave += 1
+      }
+      else {
+        playerWin()
+      }
+    })
+  }
+
+  // impure function to display You Win message when all waves are cleared
+  function playerWin() {
       // display You Win message
       document.getElementById("lives")!.innerHTML = "YOU WIN 💚"
       document.getElementById("lives")!.style.color = "green"
@@ -291,7 +304,6 @@ function asteroids() {
       ship.attr("style", "fill:green;stroke:white;stroke-width:1")
       // end the game
       lives = 0
-    })
   }
 
   // display You Lose message if the player loses

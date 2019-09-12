@@ -8,7 +8,7 @@ function asteroids() {
         .attr("hitbox", 20)
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), lives = 3, startTimer = new Elem(svg, 'text')
+        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), lives = 3, wave = 1, startTimer = new Elem(svg, 'text')
         .attr('x', 50)
         .attr('y', 100)
         .attr('fill', 'black')
@@ -31,11 +31,10 @@ function asteroids() {
     moveShip("KeyD", moveShipCW);
     createLasers();
     moveLaser();
-    createAsteroids(4);
+    summonAsteroids();
     moveAsteroid();
     removeShipInvincibility();
     animateCountdownTimer();
-    playerWin();
     playerLose();
     function moveShipACW() {
         return { x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm")) };
@@ -105,7 +104,7 @@ function asteroids() {
                 .attr("cx", Math.floor(Math.random() * svg.clientWidth))
                 .attr("cy", Math.floor(Math.random() * svg.clientHeight))
                 .attr("rotation", Math.floor(Math.random() * 360))
-                .attr("velocity", 2)
+                .attr("velocity", 1)
                 .attr("style", "fill:black;stroke:white;stroke-width:1");
         })
             .subscribe((asteroid) => asteroids.push(asteroid));
@@ -124,7 +123,7 @@ function asteroids() {
             .subscribe(({ x, y, asteroid, collision }) => {
             if (collision && (g.attr("invincible") === "false")) {
                 lives--;
-                (document.getElementById("lives").innerHTML = `Lives: ${"🚀".repeat(lives)}`);
+                document.getElementById("lives").innerHTML = `Lives: ${"🚀".repeat(lives)}`;
                 if (lives > 0)
                     resetShip();
             }
@@ -165,15 +164,25 @@ function asteroids() {
             }
         });
     }
-    function playerWin() {
+    function summonAsteroids() {
         mainObservable
-            .filter(({ time, asteroidArray }) => time > 1000 && asteroidArray.length === 0)
-            .subscribe((win) => {
-            document.getElementById("lives").innerHTML = "YOU WIN 💚";
-            document.getElementById("lives").style.color = "green";
-            ship.attr("style", "fill:green;stroke:white;stroke-width:1");
-            lives = 0;
+            .filter(({ time, asteroidArray }) => time % 1000 === 0 && asteroidArray.length === 0)
+            .subscribe(() => {
+            if (wave <= 3) {
+                document.getElementById("waves").innerHTML = `Wave: ${wave}`;
+                createAsteroids(wave * 2);
+                wave += 1;
+            }
+            else {
+                playerWin();
+            }
         });
+    }
+    function playerWin() {
+        document.getElementById("lives").innerHTML = "YOU WIN 💚";
+        document.getElementById("lives").style.color = "green";
+        ship.attr("style", "fill:green;stroke:white;stroke-width:1");
+        lives = 0;
     }
     function playerLose() {
         gameOver
