@@ -121,7 +121,7 @@ function asteroids() {
       })
     .subscribe((laser) => lasers.push(laser))
   
-   // make laser move at each time step
+  // make laser move at each time step
   mainObservable
     .flatMap(({laserArray, asteroidArray}) => {
       return Observable // turn the lasers array into an observable that can then be flatmapped
@@ -146,7 +146,7 @@ function asteroids() {
         })
     })
 
-  // Observable to create a random number of asteroids
+  // create a random number of asteroids
   mainInterval
     .takeUntil(mainInterval.filter((t) => t === 50))
     .map(() => {
@@ -161,7 +161,7 @@ function asteroids() {
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
   
-    // give the asteroids movement at each time step
+  // give the asteroids movement at each time step
   mainObservable
     .flatMap(({asteroidArray}) => {
       return Observable
@@ -175,12 +175,13 @@ function asteroids() {
         })
     })
     .subscribe(({x, y, asteroid, collision}) => {
-      // update the position of the asteroid but if the ship collides with an asteroid the ship loses a life
+      // the ship loses a life if it collides with an asteroid
       if (collision && (g.attr("invincible") === "false")) {
         lives-- 
         (document.getElementById("lives")!.innerHTML = `Lives: ${"🚀".repeat(lives)}`)
         if (lives > 0) resetShip()
       }
+      // update position of asteroid
       else asteroid.attr("cx", x).attr("cy", y)
     })
   
@@ -196,7 +197,7 @@ function asteroids() {
     ship.attr("style","fill:yellow;stroke:white;stroke-width:1")
   }
 
-  // ship can only be invincible for 3 seconds at a time
+  // ensure ship is only invincble for 3 seconds max at a time
   mainObservable
     // limitations - shield doesn't last exactly 3 secs if ship
     // dies in between the interval. Refactor if time permits
