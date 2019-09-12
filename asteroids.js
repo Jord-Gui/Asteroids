@@ -100,7 +100,7 @@ function asteroids() {
             .takeUntil(mainInterval.filter((t) => t === (amount + 1) * 10))
             .map(() => {
             return new Elem(svg, "circle")
-                .attr("r", 30)
+                .attr("r", 50)
                 .attr("cx", Math.floor(Math.random() * svg.clientWidth))
                 .attr("cy", Math.floor(Math.random() * svg.clientHeight))
                 .attr("rotation", Math.floor(Math.random() * 360))

@@ -1,6 +1,17 @@
 // FIT2102 2019 Assignment 1 - Jord Gui 29805457
 // https://docs.google.com/document/d/1Gr-M6LTU-tfm4yabqZWJYg-zTjEVqHKKTCvePGCYsUA/edit?usp=sharing
 
+/*
+  Contents:
+    1. Design Details
+    2. Variable Declarations
+    3. Function Calls
+    4. Function Definitions
+  
+  Other files
+    - Helperfunctions.ts
+*/
+
 function asteroids() {
   //---------------------------------------------Design Details------------------------------------------------------------------------------------------------
   
@@ -12,11 +23,13 @@ function asteroids() {
   // create reusable, generic functions.
 
   // HTML file contains instructions on how to play the game. 
-  /*Definition of functions that help with logic calculation can be
+  /*
+    Definition of functions that help with logic calculation can be
     found in the helperfunctions.ts file
   */
-  /* Detail of design given below: 
-    The...
+  /* 
+    Detail of design given below: 
+      The...
   */
 
 
@@ -50,8 +63,8 @@ function asteroids() {
       .attr('font-size', 100)
       .attr("stroke", "white")
       .attr("stroke-width", 1)
-    // set startTime initial value
-    startTimer.elem.textContent = "3"
+  // set startTime initial value
+  startTimer.elem.textContent = "3"
 
   const
     // create an interval of time that represents a time step in the game
@@ -81,7 +94,7 @@ function asteroids() {
       })
   
 
-  //----------------------------------------------Function Calls---------------------------------------------------------------------------------------------------
+  //----------------------------------------------Function Calls (Animate the Game)---------------------------------------------------------------------------------------------------
   
 
   // move ship depending on which key is pressed
@@ -196,7 +209,7 @@ function asteroids() {
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
-        .attr("r", 30)
+        .attr("r", 50)
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("rotation", Math.floor(Math.random()*360))
