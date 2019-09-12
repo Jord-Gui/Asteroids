@@ -31,8 +31,8 @@ function asteroids() {
     ship: Elem = new Elem(svg, 'polygon', g.elem)
       .attr("points","-15,20 0,10 15,20 0,-20")
       .attr("style","fill:yellow;stroke:white;stroke-width:1"),
-    // attribute to check whether the game is over
-    isGameOver: boolean = false,
+    // set the number of lives that the ship has
+    lives: number = 3,
     // countdown to let players get ready to play at the start of the game
     startTimer = new Elem(svg, 'text')
       .attr('x', 50)
@@ -48,7 +48,7 @@ function asteroids() {
     // create an interval of time that represents a time step in the game
     mainInterval: Observable<number> = Observable.interval(10),
     // observable for actions that require the game to be over
-    gameOver: Observable<number> = mainInterval.filter(_ => isGameOver === true),
+    gameOver: Observable<number> = mainInterval.filter(_ => lives === 0),
     // observable for when player hits a key down
     keydown: Observable<KeyboardEvent> = Observable.fromEvent<KeyboardEvent>(document, "keydown").takeUntil(gameOver),
     // observable for when there is a key up
@@ -175,12 +175,38 @@ function asteroids() {
         })
     })
     .subscribe(({x, y, asteroid, collision}) => {
-      // update the position of the asteroid but if the ship collides with an asteroid it is game over
-      collision && (g.attr("invincible") === "false")? isGameOver=true: asteroid.attr("cx", x), asteroid.attr("cy", y)
+      // update the position of the asteroid but if the ship collides with an asteroid the ship loses a life
+      if (collision && (g.attr("invincible") === "false")) {
+        lives-- 
+        (document.getElementById("lives")!.innerHTML = `Lives: ${"🚀".repeat(lives)}`)
+        if (lives > 0) resetShip()
+      }
+      else asteroid.attr("cx", x).attr("cy", y)
+    })
+  
+  // impure function that resets position of ship
+  function resetShip() {
+    g // move ship back to starting position
+      .attr("transform","translate(300 300) rotate(0)") 
+      // turn ship invincible in case asteroids are at starting position
+      .attr("invincible", "true")
+    // Move ship back to starting position
+    currentShipPosition[1] = "300", currentShipPosition[2] = "300", currentShipPosition[3] = "0"
+    // change ship colour to represent invincibility
+    ship.attr("style","fill:yellow;stroke:white;stroke-width:1")
+  }
+
+  // ship can only be invincible for 3 seconds at a time
+  mainObservable
+    // limitations - shield doesn't last exactly 3 secs if ship
+    // dies in between the interval. Refactor if time permits
+    .filter(({time}) => time%3000 === 0 && g.attr("invincible") === "true")
+    .subscribe(() => {
+      g.attr("invincible", "false")
+      ship.attr("style","fill:black;stroke:white;stroke-width:1")
     })
   
   // animate the countdown timer 
-  // make ship invincible for first 3 seconds in case asteroids spawn on it
   mainObservable
   .filter(({time}) => time%1000 === 0)
   // refactor if time permits
@@ -192,9 +218,7 @@ function asteroids() {
       countDown.elem.textContent = "1"
     }
     else if (time === 3000) {
-      countDown.elem.textContent = "GO!"
-      g.attr("invincible", "false")
-      ship.attr("style","fill:black;stroke:white;stroke-width:1")
+      countDown.elem.textContent = "FIGHT!"
     }
     else {
       countDown.elem.remove()
@@ -211,7 +235,8 @@ function asteroids() {
       document.getElementById("lives")!.style.color = "green"
       // change colour of ship to green
       ship.attr("style", "fill:green;stroke:white;stroke-width:1")
-      isGameOver = true
+      // end the game
+      lives = 0
     })
 
   // display You Lose message if the player loses

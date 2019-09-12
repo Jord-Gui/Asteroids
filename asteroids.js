@@ -8,7 +8,7 @@ function asteroids() {
         .attr("hitbox", 20)
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), isGameOver = false, startTimer = new Elem(svg, 'text')
+        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), lives = 3, startTimer = new Elem(svg, 'text')
         .attr('x', 50)
         .attr('y', 100)
         .attr('fill', 'black')
@@ -16,7 +16,7 @@ function asteroids() {
         .attr("stroke", "white")
         .attr("stroke-width", 1);
     startTimer.elem.textContent = "3";
-    const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => isGameOver === true), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
+    const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => lives === 0), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
         .takeUntil(gameOver)
         .map((time) => {
         return {
@@ -103,7 +103,27 @@ function asteroids() {
         });
     })
         .subscribe(({ x, y, asteroid, collision }) => {
-        collision && (g.attr("invincible") === "false") ? isGameOver = true : asteroid.attr("cx", x), asteroid.attr("cy", y);
+        if (collision && (g.attr("invincible") === "false")) {
+            lives--;
+            (document.getElementById("lives").innerHTML = `Lives: ${"🚀".repeat(lives)}`);
+            if (lives > 0)
+                resetShip();
+        }
+        else
+            asteroid.attr("cx", x).attr("cy", y);
+    });
+    function resetShip() {
+        g
+            .attr("transform", "translate(300 300) rotate(0)")
+            .attr("invincible", "true");
+        currentShipPosition[1] = "300", currentShipPosition[2] = "300", currentShipPosition[3] = "0";
+        ship.attr("style", "fill:yellow;stroke:white;stroke-width:1");
+    }
+    mainObservable
+        .filter(({ time }) => time % 3000 === 0 && g.attr("invincible") === "true")
+        .subscribe(() => {
+        g.attr("invincible", "false");
+        ship.attr("style", "fill:black;stroke:white;stroke-width:1");
     });
     mainObservable
         .filter(({ time }) => time % 1000 === 0)
@@ -115,9 +135,7 @@ function asteroids() {
             countDown.elem.textContent = "1";
         }
         else if (time === 3000) {
-            countDown.elem.textContent = "GO!";
-            g.attr("invincible", "false");
-            ship.attr("style", "fill:black;stroke:white;stroke-width:1");
+            countDown.elem.textContent = "FIGHT!";
         }
         else {
             countDown.elem.remove();
@@ -129,7 +147,7 @@ function asteroids() {
         document.getElementById("lives").innerHTML = "YOU WIN 💚";
         document.getElementById("lives").style.color = "green";
         ship.attr("style", "fill:green;stroke:white;stroke-width:1");
-        isGameOver = true;
+        lives = 0;
     });
     gameOver
         .filter(() => asteroids.length > 0)
