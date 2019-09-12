@@ -2,6 +2,9 @@
 // https://docs.google.com/document/d/1Gr-M6LTU-tfm4yabqZWJYg-zTjEVqHKKTCvePGCYsUA/edit?usp=sharing
 
 function asteroids() {
+  //---------------------------------------------Design Details------------------------------------------------------------------------------------------------
+  
+
   // You will be marked on your functional programming style
   // as well as the functionality that you implement.
   // Document your code!  
@@ -15,6 +18,10 @@ function asteroids() {
   /* Detail of design given below: 
     The...
   */
+
+
+  //----------------------------------------------Variable Declarations---------------------------------------------------------------------------------------------------
+  
 
   const svg = document.getElementById("canvas")!;
 
@@ -70,7 +77,56 @@ function asteroids() {
           countDown: startTimer
         }
       })
+  
 
+  //----------------------------------------------Function Calls---------------------------------------------------------------------------------------------------
+  
+
+  // move ship depending on which key is pressed
+  moveShip("KeyW", moveShipForward);
+  moveShip("KeyA", moveShipACW);
+  moveShip("KeyD", moveShipCW);
+
+  // shoot lasers whenever the space bar is pressed down
+  createLasers()
+  moveLaser()
+
+  // populate the game with asteroids that move randomly
+  createAsteroids(4)
+  moveAsteroid()
+
+  // check that ship has limited invincibility
+  removeShipInvincibility()
+
+  // animate the count down timer
+  animateCountdownTimer()
+
+  // check if the player has won the game
+  playerWin()
+
+  // check if the player has lost the game
+  playerLose()
+
+  //----------------------------------------------Function Definitions---------------------------------------------------------------------------------------------------
+
+
+  // impure function to move the ship anti-clockwise by subtracting from the rotation of the g element
+  function moveShipACW() {
+    return {x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm"))}
+  }
+  
+  // impure function to move the ship clockwise by adding to the rotation of the g element
+  function moveShipCW() {
+    return {x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm"))}
+  } 
+  
+  // impure function to move the ship forward in the direction of the front of the ship and wrapping the ship around if it gets to the edge of the canvas
+  function moveShipForward() {
+    // update ship position and wrap it around if it has reached the edges of the canvas
+    const newPosition = nextPosition(svg, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true)
+    return {x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3])}
+  }
+  
   // function to move the ship depending on which key is pressed
   function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, rotation: Number}): void {
     keydown
@@ -87,25 +143,10 @@ function asteroids() {
       g.attr("transform", `translate(${currentShipPosition[1] = x} ${currentShipPosition[2] = y}) rotate(${currentShipPosition[3] = rotation})`)
     })
   }
-  
-  // function to move the ship anti-clockwise by subtracting from the rotation of the g element
-  const moveShipACW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm"))})
-  // function to move the ship clockwise by adding to the rotation of the g element
-  const moveShipCW = () => ({x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) + Number(g.attr("rpm"))})
-  // function to move the ship forward in the direction of the front of the ship and wrapping the ship around if it gets to the edge of the canvas
-  const moveShipForward = () => {
-    // update ship position and wrap it around if it has reached the edges of the canvas
-    const newPosition = nextPosition(svg, Number(currentShipPosition[1]), Number(currentShipPosition[2]), Number(g.attr("velocity")), Number(currentShipPosition[3]), true)
-    return {x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3])}
-  }
-  
-  // call the function to move the ship
-  moveShip("KeyW", moveShipForward);
-  moveShip("KeyA", moveShipACW);
-  moveShip("KeyD", moveShipCW);
 
-  // create lasers whenever the space bar is pressed down
-  keydown
+  // function to create lasers whenever the space bar is pressed down
+  function createLasers() {
+    keydown
     // if ship is invincible, they can't shoot lasers
     // can't hold down space bar and shoot - must keep pressing
     .filter((e) => e.code === "Space" && !(e.repeat) && g.attr("invincible") === "false") 
@@ -120,9 +161,11 @@ function asteroids() {
         .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1")
       })
     .subscribe((laser) => lasers.push(laser))
+  }
   
   // make laser move at each time step
-  mainObservable
+  function moveLaser() {
+    mainObservable
     .flatMap(({laserArray, asteroidArray}) => {
       return Observable // turn the lasers array into an observable that can then be flatmapped
         .fromArray(laserArray)
@@ -145,10 +188,12 @@ function asteroids() {
           lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
         })
     })
+  }
 
-  // create a random number of asteroids
-  mainInterval
-    .takeUntil(mainInterval.filter((t) => t === 50))
+  // function that creates a set number of asteroids
+  function createAsteroids(amount: number): void {
+    mainInterval
+    .takeUntil(mainInterval.filter((t) => t === (amount+1)*10)) // each time step is 10 milliseconds 
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
@@ -160,9 +205,11 @@ function asteroids() {
         .attr("style","fill:black;stroke:white;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
+  }
   
-  // give the asteroids movement at each time step
-  mainObservable
+  // function to give the asteroids movement at each time step
+  function moveAsteroid() {
+    mainObservable
     .flatMap(({asteroidArray}) => {
       return Observable
         .fromArray(asteroidArray) // turn the array of asteroids into an observable which can then be flatmapped 
@@ -184,6 +231,7 @@ function asteroids() {
       // update position of asteroid
       else asteroid.attr("cx", x).attr("cy", y)
     })
+  }
   
   // impure function that resets position of ship
   function resetShip() {
@@ -197,8 +245,9 @@ function asteroids() {
     ship.attr("style","fill:yellow;stroke:white;stroke-width:1")
   }
 
-  // ensure ship is only invincble for 3 seconds max at a time
-  mainObservable
+  // ensure ship is only invincible for 3 seconds max at a time
+  function removeShipInvincibility() {
+    mainObservable
     // limitations - shield doesn't last exactly 3 secs if ship
     // dies in between the interval. Refactor if time permits
     .filter(({time}) => time%3000 === 0 && g.attr("invincible") === "true")
@@ -206,28 +255,32 @@ function asteroids() {
       g.attr("invincible", "false")
       ship.attr("style","fill:black;stroke:white;stroke-width:1")
     })
+  }
   
   // animate the countdown timer 
-  mainObservable
-  .filter(({time}) => time%1000 === 0)
-  // refactor if time permits
-  .subscribe(({time, countDown}) => {
-    if (time === 1000) {
-      countDown.elem.textContent = "2"
-    } 
-    else if (time === 2000) {
-      countDown.elem.textContent = "1"
-    }
-    else if (time === 3000) {
-      countDown.elem.textContent = "FIGHT!"
-    }
-    else {
-      countDown.elem.remove()
-    }
-  })
+  function animateCountdownTimer() {
+    mainObservable
+    .filter(({time}) => time%1000 === 0)
+    // refactor if time permits
+    .subscribe(({time, countDown}) => {
+      if (time === 1000) {
+        countDown.elem.textContent = "2"
+      } 
+      else if (time === 2000) {
+        countDown.elem.textContent = "1"
+      }
+      else if (time === 3000) {
+        countDown.elem.textContent = "FIGHT!"
+      }
+      else {
+        countDown.elem.remove()
+      }
+    })
+  }
 
   // display You Win message when all asteroids are destroyed
-  mainObservable
+  function playerWin() {
+    mainObservable
     // assume it doesn't take a second to complete the game and give time to create asteroids
     .filter(({time, asteroidArray}) => time > 1000 && asteroidArray.length === 0)
     .subscribe((win) => {
@@ -239,9 +292,11 @@ function asteroids() {
       // end the game
       lives = 0
     })
+  }
 
   // display You Lose message if the player loses
-  gameOver
+  function playerLose() {
+    gameOver
     .filter(() => asteroids.length > 0) // check that the player is the one that lost
     .subscribe(() => {
       // display Game Over message
@@ -250,6 +305,7 @@ function asteroids() {
       // change colour of ship to red
       ship.attr("style", "fill:red;stroke:white;stroke-width:1")
     }) 
+  }
 }
 
 // the following simply runs your asteroids function on window load.  Make sure to leave it in place.
