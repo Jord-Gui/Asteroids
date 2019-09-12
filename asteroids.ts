@@ -196,7 +196,7 @@ function asteroids() {
         collidedAsteroids.forEach((asteroid) => {
           asteroid.elem.remove() // remove asteroid svg element from canvas
           // if the asteroid is larger than a given size, it will split into two smaller ones when destroyed
-          if (Number(asteroid.attr("r")) > 25) createAsteroids(2, 25, 1.5)
+          if (Number(asteroid.attr("r")) > 25) createAsteroids(2, 25, 1.5, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")))
           asteroids.splice(asteroids.indexOf(asteroid), 1) // remove asteroid object from array
           laser.elem.remove() // remove laser svg element from canvas
           lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
@@ -205,15 +205,15 @@ function asteroids() {
   }
 
   // impure function that creates a set number of asteroids that move differently
-  function createAsteroids(amount: number, radius: number, velocity: number): void {
+  function createAsteroids(amount: number, radius: number, velocity: number, cx: number, cy: number): void {
     mainInterval
     .takeUntil(mainInterval.filter((t) => t === (amount+1)*10)) // each time step is 10 milliseconds 
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
         .attr("r", radius)
-        .attr("cx", Math.floor(Math.random()*svg.clientWidth))
-        .attr("cy", Math.floor(Math.random()*svg.clientHeight))
+        .attr("cx", cx)
+        .attr("cy", cy)
         .attr("rotation", Math.floor(Math.random()*360))
         .attr("velocity", velocity)
         .attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1") 
@@ -298,11 +298,11 @@ function asteroids() {
     // asteroids need time to be created so check if asteroid array is empty
     // in intervals to allow for at least one asteroid to be added to the array
     // or else bugs happen
-    .filter(({time, asteroidArray}) => time%30 === 0 && asteroidArray.length === 0)
+    .filter(({time, asteroidArray}) => time%100 === 0 && asteroidArray.length === 0)
     .subscribe(() => {
       if (wave <= 3) {
         document.getElementById("waves")!.innerHTML = `Wave: ${wave}`
-        createAsteroids(wave*2, 50, 1)
+        createAsteroids(wave*2, 50, 1, Math.floor(Math.random()*svg.clientWidth), Math.floor(Math.random()*svg.clientHeight))
         wave += 1
       }
       else {

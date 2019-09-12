@@ -90,21 +90,21 @@ function asteroids() {
             collidedAsteroids.forEach((asteroid) => {
                 asteroid.elem.remove();
                 if (Number(asteroid.attr("r")) > 25)
-                    createAsteroids(2, 25, 1.5);
+                    createAsteroids(2, 25, 1.5, Number(asteroid.attr("cx")), Number(asteroid.attr("cy")));
                 asteroids.splice(asteroids.indexOf(asteroid), 1);
                 laser.elem.remove();
                 lasers.splice(lasers.indexOf(laser), 1);
             });
         });
     }
-    function createAsteroids(amount, radius, velocity) {
+    function createAsteroids(amount, radius, velocity, cx, cy) {
         mainInterval
             .takeUntil(mainInterval.filter((t) => t === (amount + 1) * 10))
             .map(() => {
             return new Elem(svg, "circle")
                 .attr("r", radius)
-                .attr("cx", Math.floor(Math.random() * svg.clientWidth))
-                .attr("cy", Math.floor(Math.random() * svg.clientHeight))
+                .attr("cx", cx)
+                .attr("cy", cy)
                 .attr("rotation", Math.floor(Math.random() * 360))
                 .attr("velocity", velocity)
                 .attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1");
@@ -168,11 +168,11 @@ function asteroids() {
     }
     function summonAsteroids() {
         mainObservable
-            .filter(({ time, asteroidArray }) => time % 30 === 0 && asteroidArray.length === 0)
+            .filter(({ time, asteroidArray }) => time % 100 === 0 && asteroidArray.length === 0)
             .subscribe(() => {
             if (wave <= 3) {
                 document.getElementById("waves").innerHTML = `Wave: ${wave}`;
-                createAsteroids(wave * 2, 50, 1);
+                createAsteroids(wave * 2, 50, 1, Math.floor(Math.random() * svg.clientWidth), Math.floor(Math.random() * svg.clientHeight));
                 wave += 1;
             }
             else {
