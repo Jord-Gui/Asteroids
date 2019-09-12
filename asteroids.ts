@@ -170,7 +170,7 @@ function asteroids() {
         .attr("rotation", currentShipPosition[3])
         .attr("r", 2)
         .attr("velocity", 10)
-        .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1")
+        .attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1")
       })
     .subscribe((laser) => lasers.push(laser))
   }
@@ -195,6 +195,8 @@ function asteroids() {
         // destroy the asteroid and laser if they collide
         collidedAsteroids.forEach((asteroid) => {
           asteroid.elem.remove() // remove asteroid svg element from canvas
+          // if the asteroid is larger than a given size, it will split into two smaller ones when destroyed
+          if (Number(asteroid.attr("r")) > 25) createAsteroids(2, 25, 1.5)
           asteroids.splice(asteroids.indexOf(asteroid), 1) // remove asteroid object from array
           laser.elem.remove() // remove laser svg element from canvas
           lasers.splice(lasers.indexOf(laser), 1) // remove laser object from array
@@ -202,19 +204,19 @@ function asteroids() {
     })
   }
 
-  // function that creates a set number of asteroids
-  function createAsteroids(amount: number): void {
+  // impure function that creates a set number of asteroids that move differently
+  function createAsteroids(amount: number, radius: number, velocity: number): void {
     mainInterval
     .takeUntil(mainInterval.filter((t) => t === (amount+1)*10)) // each time step is 10 milliseconds 
     .map(() => {
       // create new asteroid
       return new Elem(svg, "circle")
-        .attr("r", 50)
+        .attr("r", radius)
         .attr("cx", Math.floor(Math.random()*svg.clientWidth))
         .attr("cy", Math.floor(Math.random()*svg.clientHeight))
         .attr("rotation", Math.floor(Math.random()*360))
-        .attr("velocity", 1)
-        .attr("style","fill:black;stroke:white;stroke-width:1") 
+        .attr("velocity", velocity)
+        .attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1") 
     })
     .subscribe((asteroid) => asteroids.push(asteroid))
   }
@@ -265,7 +267,7 @@ function asteroids() {
     .filter(({time}) => time%3000 === 0 && g.attr("invincible") === "true")
     .subscribe(() => {
       g.attr("invincible", "false")
-      ship.attr("style","fill:black;stroke:white;stroke-width:1")
+      ship.attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1")
     })
   }
   
@@ -294,12 +296,13 @@ function asteroids() {
   function summonAsteroids() {
     mainObservable
     // asteroids need time to be created so check if asteroid array is empty
-    // in intervals to allow this
-    .filter(({time, asteroidArray}) => time%1000 === 0 && asteroidArray.length === 0)
+    // in intervals to allow for at least one asteroid to be added to the array
+    // or else bugs happen
+    .filter(({time, asteroidArray}) => time%30 === 0 && asteroidArray.length === 0)
     .subscribe(() => {
       if (wave <= 3) {
         document.getElementById("waves")!.innerHTML = `Wave: ${wave}`
-        createAsteroids(wave*2)
+        createAsteroids(wave*2, 50, 1)
         wave += 1
       }
       else {

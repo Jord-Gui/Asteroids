@@ -70,7 +70,7 @@ function asteroids() {
                 .attr("rotation", currentShipPosition[3])
                 .attr("r", 2)
                 .attr("velocity", 10)
-                .attr("style", "fill:#66ff66;stroke:#00cc66;stroke-width:1");
+                .attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1");
         })
             .subscribe((laser) => lasers.push(laser));
     }
@@ -89,23 +89,25 @@ function asteroids() {
             x < 0 || y < 0 || x > svg.clientWidth || y > svg.clientHeight ? (laser.elem.remove(), lasers.splice(lasers.indexOf(laser), 1)) : laser.attr("cx", x) && laser.attr("cy", y);
             collidedAsteroids.forEach((asteroid) => {
                 asteroid.elem.remove();
+                if (Number(asteroid.attr("r")) > 25)
+                    createAsteroids(2, 25, 1.5);
                 asteroids.splice(asteroids.indexOf(asteroid), 1);
                 laser.elem.remove();
                 lasers.splice(lasers.indexOf(laser), 1);
             });
         });
     }
-    function createAsteroids(amount) {
+    function createAsteroids(amount, radius, velocity) {
         mainInterval
             .takeUntil(mainInterval.filter((t) => t === (amount + 1) * 10))
             .map(() => {
             return new Elem(svg, "circle")
-                .attr("r", 50)
+                .attr("r", radius)
                 .attr("cx", Math.floor(Math.random() * svg.clientWidth))
                 .attr("cy", Math.floor(Math.random() * svg.clientHeight))
                 .attr("rotation", Math.floor(Math.random() * 360))
-                .attr("velocity", 1)
-                .attr("style", "fill:black;stroke:white;stroke-width:1");
+                .attr("velocity", velocity)
+                .attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1");
         })
             .subscribe((asteroid) => asteroids.push(asteroid));
     }
@@ -143,7 +145,7 @@ function asteroids() {
             .filter(({ time }) => time % 3000 === 0 && g.attr("invincible") === "true")
             .subscribe(() => {
             g.attr("invincible", "false");
-            ship.attr("style", "fill:black;stroke:white;stroke-width:1");
+            ship.attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1");
         });
     }
     function animateCountdownTimer() {
@@ -166,11 +168,11 @@ function asteroids() {
     }
     function summonAsteroids() {
         mainObservable
-            .filter(({ time, asteroidArray }) => time % 1000 === 0 && asteroidArray.length === 0)
+            .filter(({ time, asteroidArray }) => time % 30 === 0 && asteroidArray.length === 0)
             .subscribe(() => {
             if (wave <= 3) {
                 document.getElementById("waves").innerHTML = `Wave: ${wave}`;
-                createAsteroids(wave * 2);
+                createAsteroids(wave * 2, 50, 1);
                 wave += 1;
             }
             else {
