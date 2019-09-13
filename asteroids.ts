@@ -44,7 +44,7 @@ function asteroids() {
     // the spaceship is animated by updating the transform and rotate property
     g: Elem = new Elem(svg,'g')
       .attr("transform","translate(300 300) rotate(0)")  
-      .attr("velocity", 10)
+      .attr("velocity", 5)
       .attr("rpm", 5)
       .attr("hitbox", 20)
       .attr("invincible", "true"),
