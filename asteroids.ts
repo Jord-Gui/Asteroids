@@ -172,7 +172,11 @@ function asteroids() {
     return {x: newPosition.nextX, y: newPosition.nextY, rotation: Number(currentShipPosition[3])}
   }
   
-  // function that moves the ship depending on which key is pressed
+  /**
+   * reusable function that moves the ship depending on which key is pressed
+   * @param Key the keycode of the key that is pressed
+   * @param moveFunction the movement of the ship based on the key pressed
+   */
   function moveShip(Key: String, moveFunction: () => {x: Number, y: Number, rotation: Number}): void {
     keydown
     .filter((e) => e.code === Key && !e.repeat) // ensure that when key is held down e.repeat keys are filtered out
