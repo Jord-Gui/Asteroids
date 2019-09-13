@@ -70,6 +70,10 @@ function asteroids() {
       3 seconds. This invincibility is set as an attribute for the ship, and an observable checks whether
       the ship is invincible every 3 seconds and makes it not invincible. 
 
+      Collision is handled by giving each object a circle hitbox and checking whether the distance
+      between the centre of the two circles is less than the sum of their radii, indicating that 
+      there has been a collision. 
+
       The countdown timer uses a function to animate the 'text' Elem. The function relies on an observable that changes
       the message content of a 'text' Elem every second. 
 
