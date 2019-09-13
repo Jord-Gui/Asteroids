@@ -174,7 +174,7 @@ function asteroids() {
         .attr("r", radius)
         .attr("cx", cx)
         .attr("cy", cy)
-        .attr("rotation", Math.floor(Math.random()*360))
+        .attr("rotation", Math.floor(Math.random()*360)) // this attribute is impure since it uses Math.Random()
         .attr("velocity", velocity)
         .attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1") 
     })
