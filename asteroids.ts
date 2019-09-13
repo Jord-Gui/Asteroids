@@ -54,17 +54,7 @@ function asteroids() {
     // set the number of lives that the ship has
     lives: number = 3,
     // set the initial level
-    wave: number = 1,
-    // countdown to let players get ready to play at the start of the game
-    startTimer = new Elem(svg, 'text')
-      .attr('x', 50)
-      .attr('y', 100)
-      .attr('fill', 'black')
-      .attr('font-size', 100)
-      .attr("stroke", "white")
-      .attr("stroke-width", 1)
-  // set startTime initial value
-  startTimer.elem.textContent = "3"
+    wave: number = 1;
 
   const
     // create an interval of time that represents a time step in the game
@@ -82,14 +72,12 @@ function asteroids() {
     // array to store asteroids after they are created
     asteroids: Elem[] = [],
     // main observable that represents the passage of time in the game
-    mainObservable = mainInterval
-      .takeUntil(gameOver)
+    mainObservable = mainInterval.takeUntil(gameOver)
       .map((time) => {
         return {
           laserArray: lasers,
           asteroidArray: asteroids,
-          time: time,
-          countDown: startTimer
+          time: time
         }
       })
   
@@ -114,7 +102,7 @@ function asteroids() {
   removeShipInvincibility()
 
   // animate the count down timer
-  animateCountdownTimer()
+  countDown()
 
   // check if the player has lost the game
   playerLose()
@@ -271,25 +259,39 @@ function asteroids() {
     })
   }
   
-  // animate the countdown timer 
-  function animateCountdownTimer() {
+  // function to animate a given Elem text for 3 seconds 
+  function animateText3Secs(text: Elem, sec1: string, sec2: string, sec3: string) {
     mainObservable
     .filter(({time}) => time%1000 === 0)
     // refactor if time permits
-    .subscribe(({time, countDown}) => {
+    .subscribe(({time}) => {
       if (time === 1000) {
-        countDown.elem.textContent = "2"
+        text.elem.textContent = sec1
       } 
       else if (time === 2000) {
-        countDown.elem.textContent = "1"
+        text.elem.textContent = sec2
       }
       else if (time === 3000) {
-        countDown.elem.textContent = "FIGHT!"
+        text.elem.textContent = sec3
       }
       else {
-        countDown.elem.remove()
+        text.elem.remove()
       }
     })
+  }
+
+  // countdown to let players get ready to play at the start of the game
+  function countDown() {
+    const startTimer = new Elem(svg, 'text')
+      .attr('x', 50)
+      .attr('y', 100)
+      .attr('fill', 'black')
+      .attr('font-size', 100)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1)
+  // set startTime initial value
+  startTimer.elem.textContent = "3"
+  animateText3Secs(startTimer, "2", "1", "FIGHT!")
   }
 
   // increment level if all asteroids are destroyed
@@ -311,7 +313,7 @@ function asteroids() {
     })
   }
 
-  // impure function to display You Win message when all waves are cleared
+  // impure function to display You Win message when all waves are cleared and end the game
   function playerWin() {
       // display You Win message
       document.getElementById("lives")!.innerHTML = "YOU WIN 💚"

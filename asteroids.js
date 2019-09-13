@@ -8,22 +8,13 @@ function asteroids() {
         .attr("hitbox", 20)
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
-        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), lives = 3, wave = 1, startTimer = new Elem(svg, 'text')
-        .attr('x', 50)
-        .attr('y', 100)
-        .attr('fill', 'black')
-        .attr('font-size', 100)
-        .attr("stroke", "white")
-        .attr("stroke-width", 1);
-    startTimer.elem.textContent = "3";
-    const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => lives === 0), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval
-        .takeUntil(gameOver)
+        .attr("style", "fill:yellow;stroke:white;stroke-width:1"), lives = 3, wave = 1;
+    const mainInterval = Observable.interval(10), gameOver = mainInterval.filter(_ => lives === 0), keydown = Observable.fromEvent(document, "keydown").takeUntil(gameOver), keyup = Observable.fromEvent(document, "keyup").takeUntil(gameOver), currentShipPosition = /translate\((\d+) (\d+)\) rotate\((\d+)\)/.exec(g.attr("transform")), lasers = [], asteroids = [], mainObservable = mainInterval.takeUntil(gameOver)
         .map((time) => {
         return {
             laserArray: lasers,
             asteroidArray: asteroids,
-            time: time,
-            countDown: startTimer
+            time: time
         };
     });
     moveShip("KeyW", moveShipForward);
@@ -34,7 +25,7 @@ function asteroids() {
     summonAsteroids();
     moveAsteroid();
     removeShipInvincibility();
-    animateCountdownTimer();
+    countDown();
     playerLose();
     function moveShipACW() {
         return { x: Number(currentShipPosition[1]), y: Number(currentShipPosition[2]), rotation: Number(currentShipPosition[3]) - Number(g.attr("rpm")) };
@@ -148,23 +139,34 @@ function asteroids() {
             ship.attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1");
         });
     }
-    function animateCountdownTimer() {
+    function animateText3Secs(text, sec1, sec2, sec3) {
         mainObservable
             .filter(({ time }) => time % 1000 === 0)
-            .subscribe(({ time, countDown }) => {
+            .subscribe(({ time }) => {
             if (time === 1000) {
-                countDown.elem.textContent = "2";
+                text.elem.textContent = sec1;
             }
             else if (time === 2000) {
-                countDown.elem.textContent = "1";
+                text.elem.textContent = sec2;
             }
             else if (time === 3000) {
-                countDown.elem.textContent = "FIGHT!";
+                text.elem.textContent = sec3;
             }
             else {
-                countDown.elem.remove();
+                text.elem.remove();
             }
         });
+    }
+    function countDown() {
+        const startTimer = new Elem(svg, 'text')
+            .attr('x', 50)
+            .attr('y', 100)
+            .attr('fill', 'black')
+            .attr('font-size', 100)
+            .attr("stroke", "white")
+            .attr("stroke-width", 1);
+        startTimer.elem.textContent = "3";
+        animateText3Secs(startTimer, "2", "1", "FIGHT!");
     }
     function summonAsteroids() {
         mainObservable
