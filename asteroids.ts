@@ -223,8 +223,8 @@ function asteroids() {
    * @param amount the number of asteroids to create
    * @param radius the radius of the asteroid
    * @param velocity the velocity of the asteroid
-   * @param cx the initial position of the asteroid
-   * @param cy the initial position of the asteroid
+   * @param cx the initial x-coordiante of the asteroid
+   * @param cy the initial y-coordinate of the asteroid
    */
   function createAsteroids(amount: number, radius: number, velocity: number, cx: number, cy: number): void {
     mainInterval
@@ -240,7 +240,7 @@ function asteroids() {
         .attr("velocity", velocity)
         .attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1") 
     })
-    // add teh asteroid to the asteroid array
+    // add the asteroid to the asteroid array
     .subscribe((asteroid) => asteroids.push(asteroid))
   }
 
@@ -252,8 +252,11 @@ function asteroids() {
     // or else levels are skipped
     .filter(({time, asteroidArray}) => time%500 === 0 && asteroidArray.length === 0)
     .subscribe(() => {
+      // check if player has beaten all levels
       if (wave <= 3) {
+        // update the wave number 
         document.getElementById("waves")!.innerHTML = `Wave: ${wave}`
+        // create new asteroids for a new wave, with the amount depending on what wave they are on
         createAsteroids(wave*2, 50, 1, Math.floor(Math.random()*svg.clientWidth), Math.floor(Math.random()*svg.clientHeight))
         wave += 1
       }
@@ -311,7 +314,7 @@ function asteroids() {
       if (collision && (g.attr("invincible") === "false")) {
         lives-- 
         document.getElementById("lives")!.innerHTML = `Lives: ${"🚀".repeat(lives)}`
-        if (lives > 0) resetShip()
+        if (lives > 0) resetShip() // if not all lives are lost the position of the ship is reset
       }
       // update position of asteroid
       else asteroid.attr("cx", x).attr("cy", y)
@@ -332,8 +335,9 @@ function asteroids() {
 
   // function that displays the You Lose message if the player loses all their lives
   function playerLose() {
-    gameOver
-    .filter(() => asteroids.length > 0) // check that the player is the one that lost
+    gameOver // check when the game is over
+    // check that the player is the one that lost by seeing if all asteroids are destroyed
+    .filter(() => asteroids.length > 0) 
     .subscribe(() => {
       // display Game Over message
       document.getElementById("lives")!.innerHTML = "YOU LOSE 😡"
@@ -347,7 +351,7 @@ function asteroids() {
   function animateText3Secs(text: Elem, sec1: string, sec2: string, sec3: string, startSec: number) {
     mainObservable
     .filter(({time}) => time%1000 === 0)
-    // refactor if time permits
+    // change the message of the text depending on which second it is
     .subscribe(({time}) => {
       if (time === startSec) {
         text.elem.textContent = sec1
@@ -373,8 +377,9 @@ function asteroids() {
       .attr('font-size', 100)
       .attr("stroke", "white")
       .attr("stroke-width", 1)
-  // set startTime initial value
+  // set startTime initial value of 3
   startTimer.elem.textContent = "3"
+  // change the text in teh next three seconds
   animateText3Secs(startTimer, "2", "1", "FIGHT!", 1000)
   }
 
