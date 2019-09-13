@@ -200,7 +200,8 @@ function asteroids() {
     // can't hold down space bar and shoot - must keep pressing
     .filter((e) => e.code === "Space" && !(e.repeat) && g.attr("invincible") === "false") 
     .map(() => {
-      // create a new laser
+      // create a new laser at the location the ship 
+      // the laser shoots in the direction of where the ship is pointing
       return new Elem(svg, 'circle')
         .attr("cx", currentShipPosition[1])
         .attr("cy", currentShipPosition[2])
@@ -209,15 +210,24 @@ function asteroids() {
         .attr("velocity", 10)
         .attr("style", "fill:black;fill-opacity:0;stroke:white;stroke-width:1")
       })
+    // add the laser element to the laser array
     .subscribe((laser) => lasers.push(laser))
   }
 
-  // function that creates a set number of asteroids that move differently
+  /**
+   * reusuable function that creates a set number of asteroids that move differently
+   * @param amount the number of asteroids to create
+   * @param radius the radius of the asteroid
+   * @param velocity the velocity of the asteroid
+   * @param cx the initial position of the asteroid
+   * @param cy the initial position of the asteroid
+   */
   function createAsteroids(amount: number, radius: number, velocity: number, cx: number, cy: number): void {
     mainInterval
-    .takeUntil(mainInterval.filter((t) => t === (amount+1)*10)) // each time step is 10 milliseconds 
+    // each time step is 10 milliseconds so maths is involved to create the amount of asteroids
+    .takeUntil(mainInterval.filter((t) => t === (amount+1)*10))
     .map(() => {
-      // create new asteroid
+      // create new asteroid that moves in different directions
       return new Elem(svg, "circle")
         .attr("r", radius)
         .attr("cx", cx)
@@ -226,6 +236,7 @@ function asteroids() {
         .attr("velocity", velocity)
         .attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1") 
     })
+    // add teh asteroid to the asteroid array
     .subscribe((asteroid) => asteroids.push(asteroid))
   }
 
