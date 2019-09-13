@@ -4,7 +4,7 @@ function asteroids() {
     let g = new Elem(svg, 'g')
         .attr("transform", "translate(300 300) rotate(0)")
         .attr("velocity", 10)
-        .attr("rpm", 10)
+        .attr("rpm", 5)
         .attr("hitbox", 20)
         .attr("invincible", "true"), ship = new Elem(svg, 'polygon', g.elem)
         .attr("points", "-15,20 0,10 15,20 0,-20")
