@@ -30,7 +30,17 @@ function asteroids() {
     HTML file contains instructions on how to play the game.
     
     Detail of design given below: 
-      The...
+      
+      The game works around two main observables - the "mainObservable" that 
+      acts as a clock that ticks every 10ms, and the "keydown" observable which
+      looks for inputs from the player to control the ship. The game continues 
+      until either the player loses all of their lives or the player completes
+      the final level. The "level" and "lives" are global variables that are 
+      incremented and decremented respectively, and the "mainObservable" checks
+      when the criteria for gameover has been met, in which case the game stops. 
+
+      Observables have been put into functions to increase readibility of the code.
+      Specific implementation details can be found at the function definition. 
   */
 
 
