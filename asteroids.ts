@@ -14,13 +14,7 @@
 
 function asteroids() {
   //---------------------------------------------Design Details------------------------------------------------------------------------------------------------
-  
 
-  // You will be marked on your functional programming style
-  // as well as the functionality that you implement.
-  // Document your code!  
-  // Explain which ideas you have used ideas from the lectures to 
-  // create reusable, generic functions.
 
   /*
     Definition of functions that help with logic calculation can be
@@ -36,8 +30,48 @@ function asteroids() {
       looks for inputs from the player to control the ship. The game continues 
       until either the player loses all of their lives or the player completes
       the final level. The "level" and "lives" are global variables that are 
-      incremented and decremented respectively, and the "mainObservable" checks
-      when the criteria for gameover has been met, in which case the game stops. 
+      incremented and decremented respectively, and the "mainObservable" runs until
+      the criteria for gameover has been met, in which case the game stops. The "gameOver"
+      observable is used to output messages that occur after the game has stopped.
+
+      The "keydown" observable checks for input by the player by observing a 'keydown' event. 
+      An action is performed whenever a certain key is hit down - 'w' moves the ship forward,
+      'a' rotates the ship anti-clockwise, 'd' rotates the ship clockwise, and spacebar shoots
+      out a laser (bullet). 
+
+      The ship is moved whenever an 'a', 'w', or 'd' keydown event occurs. A regex is used to
+      determine the current position of the ship, which stores the x-coordinate, y-coordinate 
+      and rotation of the ship in an array. When a keydown event is executed, the observable filters 
+      out the repeated keys, and while the key is still being held down, the position of the ship
+      is updated every 10ms using am interval. This ensures smooth motion
+
+      A laser (bullet) is created whenever a 'spacebar' keydown event occurs. It is created
+      at the location of the ship, and moves forward in the direction that the ship is facing.
+      The laser is also stored in an array "lasers" after creation. Every time step, the "mainObservable"
+      iterates through the laser array to update each lasers position. The laser also checks whether it has
+      collided with an asteroid, and if it has, destroy the asteroid. 
+
+      An asteroid is created using the "createAsteroids" function which is a reusable function
+      that can be used to create asteroids of different sizes and speeds. A global variable array
+      "asteroids" is used to store asteroid objects once they have been created. There are two sizes of asteroids,
+      with the bigger size splitting into smaller size when destroyed and the smaller one
+      being destoryed if hit by a laser. Whenever an asteroid is moved, it also checks whether 
+      it has collided with the ship, and if it has, the ship loses a life. If the lives become zero, it is game over. 
+      
+      The "summonAsteroids" function is
+      called to populate the map with asteroids at the start of each level. The asteroid is moved 
+      using "mainObservable" and at each time step its position is updated. A reference to the 
+      asteroid array is also passed through in "mainObservable" so that it has access to it 
+      without having to look at the actual global variable which keeps the function relatively pure.
+
+      The ship is invincible for 3 seconds at the start of the game in case asteroids 
+      spawn on the ship. This also gives players time to get ready. When a player loses a life,
+      the ship gets respawned back at the starting position and also becomes invincible for another
+      3 seconds. This invincibility is set as an attribute for the ship, and an observable checks whether
+      the ship is invincible every 3 seconds and makes it not invincible. 
+
+      The countdown timer uses a function to animate the 'text' Elem. The function relies on an observable that changes
+      the message content of a 'text' Elem every second. 
 
       Observables have been put into functions to increase readibility of the code.
       Specific implementation details can be found at the function definition. 
