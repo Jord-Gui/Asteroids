@@ -326,18 +326,18 @@ function asteroids() {
     mainObservable
     // limitations - shield doesn't last exactly 3 secs if ship
     // dies in between the interval. Refactor if time permits
-    .filter(({time}) => time%3000 === 0 && g.attr("invincible") === "true")
+    .filter(({time}) => time%3000 === 0 && g.attr("invincible") === "true") // impure since it access attribute of GV
     .subscribe(() => {
       g.attr("invincible", "false")
       ship.attr("style","fill:black;fill-opacity:0;stroke:white;stroke-width:1")
     })
   }
 
-  // function that displays the You Lose message if the player loses all their lives
+  // impure function that displays the You Lose message if the player loses all their lives
   function playerLose() {
     gameOver // check when the game is over
     // check that the player is the one that lost by seeing if all asteroids are destroyed
-    .filter(() => asteroids.length > 0) 
+    .filter(() => asteroids.length > 0) // impure as needs to check a global variable
     .subscribe(() => {
       // display Game Over message
       document.getElementById("lives")!.innerHTML = "YOU LOSE 😡"
@@ -347,7 +347,7 @@ function asteroids() {
     }) 
   }
   
-  // function that animates a given Elem text for 3 seconds 
+  // pure function that animates a given Elem text for 3 seconds 
   function animateText3Secs(text: Elem, sec1: string, sec2: string, sec3: string, startSec: number) {
     mainObservable
     .filter(({time}) => time%1000 === 0)
@@ -368,7 +368,7 @@ function asteroids() {
     })
   }
 
-  // function that creates a countdown at the start of the game to get players ready for action
+  // pure function that creates a countdown at the start of the game to get players ready for action
   function countDown() {
     const startTimer = new Elem(svg, 'text')
       .attr('x', 50)
