@@ -81,7 +81,7 @@ function asteroids() {
     }
     function summonAsteroids() {
         mainObservable
-            .filter(({ time, asteroidArray }) => time % 100 === 0 && asteroidArray.length === 0)
+            .filter(({ time, asteroidArray }) => time % 500 === 0 && asteroidArray.length === 0)
             .subscribe(() => {
             if (wave <= 3) {
                 document.getElementById("waves").innerHTML = `Wave: ${wave}`;

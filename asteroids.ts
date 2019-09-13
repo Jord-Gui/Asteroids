@@ -22,12 +22,13 @@ function asteroids() {
   // Explain which ideas you have used ideas from the lectures to 
   // create reusable, generic functions.
 
-  // HTML file contains instructions on how to play the game. 
   /*
     Definition of functions that help with logic calculation can be
-    found in the helperfunctions.ts file
+    found in the helperfunctions.ts file.
   */
   /* 
+    HTML file contains instructions on how to play the game.
+    
     Detail of design given below: 
       The...
   */
@@ -185,8 +186,8 @@ function asteroids() {
     mainObservable
     // asteroids need time to be created so check if asteroid array is empty
     // in intervals to allow for at least one asteroid to be added to the array
-    // or else bugs happen
-    .filter(({time, asteroidArray}) => time%100 === 0 && asteroidArray.length === 0)
+    // or else levels are skipped
+    .filter(({time, asteroidArray}) => time%500 === 0 && asteroidArray.length === 0)
     .subscribe(() => {
       if (wave <= 3) {
         document.getElementById("waves")!.innerHTML = `Wave: ${wave}`
@@ -343,7 +344,3 @@ if (typeof window != 'undefined')
   window.onload = ()=>{
     asteroids();
   }
-
- 
-
- 
