@@ -8,7 +8,7 @@
     3. Function Calls
     4. Function Definitions
   
-  Other files
+  Other files:
     - Helperfunctions.ts
 */
 
